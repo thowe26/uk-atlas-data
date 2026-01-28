@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UK Atlas: Inflation Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #7f8c8d; margin-bottom: 30px; }
+        canvas { width: 100% !important; height: 400px !important; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>UK Inflation (CPI) 1989-2024</h1>
+        <p class="subtitle">Data Source: ONS Series MM23 (Updated Daily)</p>
+        
+        <div style="position: relative; height:400px; width:100%">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // 1. Point to your CSV file
+        const dataUrl = 'data/cpi_inflation.csv';
+
+        Papa.parse(dataUrl, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+                
+                // 2. Extract columns
+                // Filter out empty rows just in case
+                const cleanData = data.filter(row => row.Date && row.CPI_Inflation);
+                
+                const labels = cleanData.map(row => row.Date);
+                const values = cleanData.map(row => row.CPI_Inflation);
+
+                // 3. Draw Chart
+                const ctx = document.getElementById('myChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Inflation Rate (%)',
+                            data: values,
+                            borderColor: '#e74c3c', // Red line
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)', // Light red fill
+                            borderWidth: 2,
+                            pointRadius: 0, // No dots (cleaner look)
+                            pointHoverRadius: 5,
+                            fill: true,
+                            tension: 0.1 // Slight curve
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            x: { 
+                                type: 'category',
+                                ticks: { maxTicksLimit: 10 } // Don't show every single date
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Annual % Change' }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
