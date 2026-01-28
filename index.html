@@ -10,36 +10,23 @@
     <style>
         :root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
-        
         .container { max-width: 1200px; margin: 0 auto; }
         
-        /* Headers */
         header { text-align: center; margin-bottom: 50px; padding: 40px 0; border-bottom: 3px solid #dfe6e9; }
         h1 { margin: 0; font-size: 2.5rem; color: var(--primary); letter-spacing: -1px; }
         .subtitle { color: #7f8c8d; margin-top: 10px; font-size: 1.1rem; }
         
-        /* Section Dividers */
-        .section-title { 
-            font-size: 1.8rem; color: var(--primary); margin: 60px 0 30px 0; 
-            border-left: 5px solid #3498db; padding-left: 15px; 
-        }
-
-        /* Grid Layout */
+        .section-title { font-size: 1.8rem; color: var(--primary); margin: 60px 0 30px 0; border-left: 5px solid #3498db; padding-left: 15px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; }
         
-        /* Cards */
         .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h3 { margin-top: 0; color: #34495e; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Badges */
         .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
-        .live { background: #e1f7d5; color: #2ecc71; border: 1px solid #2ecc71; } /* Green for Auto */
-        .manual { background: #fff3cd; color: #f39c12; border: 1px solid #f39c12; } /* Orange for Manual */
-
-        /* Chart Sizing */
-        .chart-box { position: relative; height: 350px; width: 100%; }
+        .live { background: #e1f7d5; color: #2ecc71; border: 1px solid #2ecc71; }
+        .manual { background: #fff3cd; color: #f39c12; border: 1px solid #f39c12; }
         
-        /* Footer */
+        .chart-box { position: relative; height: 350px; width: 100%; }
         footer { text-align: center; margin-top: 60px; color: #95a5a6; font-size: 0.9rem; }
     </style>
 </head>
@@ -53,22 +40,18 @@
 
     <div class="section-title">Chapter 1: The Economy</div>
     <div class="grid">
-        
         <div class="card">
             <h3>Inflation (CPI) <span class="badge live">Live Update</span></h3>
             <div class="chart-box"><canvas id="chartInflation"></canvas></div>
         </div>
-
         <div class="card">
             <h3>National Debt (% of GDP) <span class="badge live">Live Update</span></h3>
             <div class="chart-box"><canvas id="chartDebt"></canvas></div>
         </div>
-
         <div class="card">
             <h3>GDP Growth (Quarterly) <span class="badge live">Live Update</span></h3>
             <div class="chart-box"><canvas id="chartGDP"></canvas></div>
         </div>
-
         <div class="card">
             <h3>Unemployment Rate <span class="badge live">Live Update</span></h3>
             <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
@@ -77,28 +60,36 @@
 
     <div class="section-title">Chapter 2: Migration & Borders</div>
     <div class="grid">
-        
         <div class="card">
             <h3>Net Migration History <span class="badge manual">Annual Data</span></h3>
             <div class="chart-box"><canvas id="chartMigrationNet"></canvas></div>
         </div>
-
         <div class="card">
             <h3>The "Inflow" Breakdown <span class="badge manual">Visa Data</span></h3>
             <div class="chart-box"><canvas id="chartMigrationStack"></canvas></div>
         </div>
     </div>
 
-    <footer>
-        Data Sourced directly from ONS API & Bulletins. <br>
-        Automated Daily Updates via GitHub Actions.
-    </footer>
+    <footer>Data Sourced directly from ONS API & Bulletins. Automated Daily Updates.</footer>
 </div>
 
 <script>
-    // --- HELPER FUNCTIONS ---
+    // --- CHART CONFIGURATION ---
     
-    // 1. Standard Line Chart (Economy)
+    // Config: How we want the X-Axis to look (Just Years)
+    const yearScaleConfig = {
+        ticks: {
+            maxTicksLimit: 12,
+            callback: function(value, index, values) {
+                // Get the label (e.g. "2023 JAN" or "2023 Q1")
+                const label = this.getLabelForValue(value);
+                // Return just the first 4 chars (The Year)
+                return label.substring(0, 4);
+            }
+        },
+        grid: { display: false }
+    };
+
     function drawLineChart(elemId, csvPath, label, color, tension=0.3) {
         Papa.parse(csvPath, {
             download: true, header: true, skipEmptyLines: true,
@@ -112,7 +103,7 @@
                             label: label,
                             data: data.map(r => r.Value),
                             borderColor: color,
-                            backgroundColor: color + '15', // Transparent fill
+                            backgroundColor: color + '15',
                             borderWidth: 2, pointRadius: 0, hoverRadius: 4,
                             fill: true, tension: tension
                         }]
@@ -120,14 +111,16 @@
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
-                        scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: false } }
+                        scales: { 
+                            x: yearScaleConfig, // <--- Apply the Year Format Here
+                            y: { beginAtZero: false } 
+                        }
                     }
                 });
             }
         });
     }
 
-    // 2. Bar Chart (Net Migration)
     function drawBarChart(elemId, csvPath) {
         Papa.parse(csvPath, {
             download: true, header: true, skipEmptyLines: true,
@@ -143,13 +136,15 @@
                             backgroundColor: data.map(r => r.Net_Migration < 0 ? '#e74c3c' : '#3498db')
                         }]
                     },
-                    options: { responsive: true, maintainAspectRatio: false }
+                    options: { 
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { grid: { display: false } } }
+                    }
                 });
             }
         });
     }
 
-    // 3. Stacked Chart (Visa Breakdown)
     function drawStackedChart(elemId, csvPath) {
         Papa.parse(csvPath, {
             download: true, header: true, skipEmptyLines: true,
@@ -177,14 +172,12 @@
         });
     }
 
-    // --- EXECUTE DRAWING ---
-    // Automated Data
+    // Execute
     drawLineChart('chartInflation', 'data/cpi_inflation.csv', 'Inflation %', '#e74c3c');
     drawLineChart('chartDebt', 'data/national_debt.csv', 'Debt % GDP', '#8e44ad');
     drawLineChart('chartGDP', 'data/gdp_growth.csv', 'GDP Growth %', '#2c3e50', 0.1);
     drawLineChart('chartUnemployment', 'data/unemployment.csv', 'Unemployment Rate %', '#2980b9');
 
-    // Manual Data
     drawBarChart('chartMigrationNet', 'data/net_migration_long_term.csv');
     drawStackedChart('chartMigrationStack', 'data/migration_inflow_breakdown.csv');
 
