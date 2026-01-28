@@ -128,7 +128,7 @@
         });
     }
 
-    // --- RENDER FUNCTION ---
+ // --- RENDER FUNCTION (Fixed Dates) ---
     function renderChart(elemId, dataArray, label, color, type) {
         new Chart(document.getElementById(elemId), {
             type: type,
@@ -149,7 +149,14 @@
                 scales: { 
                     x: { 
                         grid: { display: false },
-                        ticks: { maxTicksLimit: 12 } 
+                        ticks: { 
+                            maxTicksLimit: 12,
+                            // FORCE YEAR FORMAT: Just take the first 4 characters
+                            callback: function(value, index, values) {
+                                const label = this.getLabelForValue(value);
+                                return label.substring(0, 4);
+                            }
+                        } 
                     },
                     y: { beginAtZero: false } 
                 }
