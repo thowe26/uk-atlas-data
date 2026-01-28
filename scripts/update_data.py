@@ -1,33 +1,34 @@
 import pandas as pd
 import requests
 import os
+import json
 
-# --- NEW CONFIGURATION (API BASED) ---
-# We use the official API: https://api.ons.gov.uk/timeseries/{SERIES}/{DATASET}/data
+# --- CONFIGURATION ---
+# The Robot will try these datasets in order until it finds data.
 DATASETS = {
     "cpi_inflation": {
         "series": "l55o", 
-        "dataset": "mm23", 
-        "filter_year": 1980,
-        "frequency": "months" # Inflation is monthly
+        "cabinets": ["mm23", "cpi"], # Try 'mm23' first, then 'cpi'
+        "frequency": "months",
+        "filter_year": 1980
     },
     "gdp_growth": {
         "series": "ihyq", 
-        "dataset": "qna", 
-        "filter_year": 1980,
-        "frequency": "quarters" # GDP is quarterly
+        "cabinets": ["qna", "pn2", "mret", "ukea"], # Try all these locations for GDP
+        "frequency": "quarters",
+        "filter_year": 1980
     },
     "national_debt": {
         "series": "hf6x", 
-        "dataset": "pusf", 
-        "filter_year": 1970,
-        "frequency": "months"
+        "cabinets": ["pusf"],
+        "frequency": "months",
+        "filter_year": 1970
     },
     "unemployment": {
         "series": "mgsx", 
-        "dataset": "lms", 
-        "filter_year": 1971,
-        "frequency": "months"
+        "cabinets": ["lms"], 
+        "frequency": "months",
+        "filter_year": 1971
     }
 }
 
@@ -36,55 +37,62 @@ def fetch_data():
     headers = {'User-Agent': 'Mozilla/5.0'}
 
     for name, config in DATASETS.items():
-        print(f"--- Processing: {name} ({config['series'].upper()}) ---")
+        print(f"--- Hunting for: {name} ({config['series']}) ---")
         
-        # 1. Construct the API URL
-        url = f"https://api.ons.gov.uk/timeseries/{config['series']}/dataset/{config['dataset']}/data"
+        found_data = False
         
-        try:
-            response = requests.get(url, headers=headers)
+        # Try each 'cabinet' (dataset) in the list
+        for cabinet in config['cabinets']:
+            url = f"https://api.ons.gov.uk/timeseries/{config['series']}/dataset/{cabinet}/data"
+            print(f"  ... checking cabinet '{cabinet}'")
             
-            if response.status_code == 200:
-                data = response.json()
+            try:
+                response = requests.get(url, headers=headers)
                 
-                # 2. Extract the specific list we need (months or quarters)
-                freq_key = config['frequency']
-                if freq_key not in data:
-                    print(f"⚠️ Warning: Could not find '{freq_key}' in data. Available: {data.keys()}")
-                    continue
-                
-                raw_points = data[freq_key]
-                
-                # 3. Convert to DataFrame
-                # The API returns a list of dictionaries: [{'date': '1980 Q1', 'value': '2.5'}, ...]
-                rows = []
-                for p in raw_points:
-                    # Clean Date: API gives "1980 Q1" or "2023 OCT". We want distinct sortable dates.
-                    # For simplicity, we keep the 'date' string for the CSV, but we filter by 'year'
-                    year = int(p['year'])
-                    if year >= config['filter_year']:
-                        # Use the label provided by ONS (e.g., "2023 Q1" or "2023 SEP")
-                        # To make it work with our charts, we want a standard format if possible,
-                        # but "YYYY QX" is actually fine for charts. 
-                        # Let's standardize to YYYY-MM-DD for easier sorting if needed, 
-                        # OR keep it simple. Let's keep the ONS 'date' label for display.
-                        rows.append({
-                            "Date": p['date'],  # e.g., "1988 JAN" or "2022 Q3"
-                            "Value": p['value']
-                        })
+                if response.status_code == 200:
+                    data = response.json()
+                    freq_key = config['frequency']
+                    
+                    # Check 1: Does the frequency key exist? (e.g. 'quarters')
+                    if freq_key not in data:
+                        print(f"      [!] Key '{freq_key}' not found in JSON.")
+                        continue
+                        
+                    raw_points = data[freq_key]
+                    
+                    # Check 2: Is the list empty?
+                    if len(raw_points) == 0:
+                        print(f"      [!] Data list is empty.")
+                        continue
 
-                df = pd.DataFrame(rows)
-                
-                # Save
-                output_file = f"data/{name}.csv"
-                df.to_csv(output_file, index=False)
-                print(f"✅ Success! Saved {len(df)} rows to {output_file}")
-                
-            else:
-                print(f"❌ Failed to download {name}. Status Code: {response.status_code}")
-                
-        except Exception as e:
-            print(f"⚠️ Critical Error processing {name}: {e}")
+                    # Process Data
+                    rows = []
+                    for p in raw_points:
+                        year = int(p['year'])
+                        if year >= config['filter_year']:
+                            rows.append({
+                                "Date": p['date'],
+                                "Value": p['value']
+                            })
+                    
+                    # Check 3: Did we actually get rows after filtering?
+                    if len(rows) > 0:
+                        df = pd.DataFrame(rows)
+                        output_file = f"data/{name}.csv"
+                        df.to_csv(output_file, index=False)
+                        print(f"  ✅ SUCCESS! Found {len(df)} rows in '{cabinet}'. Saved to {output_file}")
+                        found_data = True
+                        break # Stop hunting, we found it!
+                    else:
+                         print(f"      [!] All data was filtered out (Year < {config['filter_year']}).")
+                else:
+                    print(f"      [x] API Error: {response.status_code}")
+                    
+            except Exception as e:
+                print(f"      [!] Script Error: {e}")
+
+        if not found_data:
+            print(f"❌ CRITICAL: Could not find ANY data for {name} in any cabinet.")
 
 if __name__ == "__main__":
     fetch_data()
