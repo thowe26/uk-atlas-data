@@ -74,89 +74,147 @@
 </div>
 
 <script>
-    // --- DRAWING FUNCTIONS ---
-
-    function drawHistoryChart(elemId, column, label, color, type='line') {
+    // --- THE HYBRID STITCHER ---
+    // This function loads History, then tries to load Live data to append to it.
+    
+    function drawHybridChart(elemId, historyCol, liveFile, label, color, type='line') {
+        
+        // 1. Load History First
         Papa.parse('data/historical_economy.csv', {
             download: true, header: true, skipEmptyLines: true,
-            complete: function(results) {
-                const data = results.data.filter(r => r.Year);
-                new Chart(document.getElementById(elemId), {
-                    type: type,
-                    data: {
-                        labels: data.map(r => r.Year),
-                        datasets: [{
-                            label: label,
-                            data: data.map(r => r[column]),
-                            borderColor: color,
-                            backgroundColor: color + '20',
-                            borderWidth: 2, pointRadius: 0, hoverRadius: 4,
-                            fill: true, tension: 0.3
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        scales: { 
-                            x: { grid: { display: false } },
-                            y: { beginAtZero: false } 
+            complete: function(histResults) {
+                
+                // Prepare History Array
+                let combinedData = histResults.data
+                    .filter(r => r.Year)
+                    .map(r => ({
+                        date: r.Year, // e.g. "1990"
+                        value: parseFloat(r[historyCol])
+                    }));
+
+                // 2. Try to Load Live Data
+                Papa.parse(`data/${liveFile}`, {
+                    download: true, header: true, skipEmptyLines: true,
+                    complete: function(liveResults) {
+                        console.log(`Live data for ${label}: Found ${liveResults.data.length} rows`);
+                        
+                        // Filter for data NEWER than our history (Post-2023)
+                        const liveData = liveResults.data
+                            .filter(r => r.Date && r.Value)
+                            .map(r => ({
+                                date: r.Date, // e.g. "2024 JAN"
+                                value: parseFloat(r.Value)
+                            }))
+                            .filter(item => {
+                                // rigorous date check: Only take items from 2024 onwards
+                                const year = parseInt(item.date.substring(0,4));
+                                return year >= 2024; 
+                            });
+
+                        // Stitch them together!
+                        if (liveData.length > 0) {
+                            combinedData = combinedData.concat(liveData);
                         }
+
+                        renderChart(elemId, combinedData, label, color, type);
+                    },
+                    error: function() {
+                        // If Live file fails (404), just render History
+                        console.log(`Live data missing for ${label}. Using history only.`);
+                        renderChart(elemId, combinedData, label, color, type);
                     }
                 });
             }
         });
     }
 
-    // --- EXECUTE DRAWING ---
+    // --- RENDER FUNCTION ---
+    function renderChart(elemId, dataArray, label, color, type) {
+        new Chart(document.getElementById(elemId), {
+            type: type,
+            data: {
+                labels: dataArray.map(d => d.date),
+                datasets: [{
+                    label: label,
+                    data: dataArray.map(d => d.value),
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    borderWidth: 2, pointRadius: 0, hoverRadius: 4,
+                    fill: true, tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: { 
+                    x: { 
+                        grid: { display: false },
+                        ticks: { maxTicksLimit: 12 } 
+                    },
+                    y: { beginAtZero: false } 
+                }
+            }
+        });
+    }
+
+    // --- MIGRATION (Manual Only) ---
+    function drawManualBar(elemId, file, colLabel, colValue) {
+        Papa.parse(`data/${file}`, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data.filter(r => r[colLabel]);
+                new Chart(document.getElementById(elemId), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(r => r[colLabel]),
+                        datasets: [{
+                            label: 'People',
+                            data: data.map(r => r[colValue]),
+                            backgroundColor: data.map(r => r[colValue] < 0 ? '#e74c3c' : '#3498db')
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        });
+    }
     
-    // 1. Economy (All from the new Master File)
-    drawHistoryChart('chartInflation', 'Inflation', 'Inflation %', '#e74c3c');
-    drawHistoryChart('chartDebt', 'Debt_GDP', 'Debt % GDP', '#8e44ad');
-    drawHistoryChart('chartGDP', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); // Bar chart for GDP looks better
-    drawHistoryChart('chartUnemployment', 'Unemployment', 'Unemployment %', '#2980b9');
+    function drawStacked(elemId, file) {
+         Papa.parse(`data/${file}`, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data.filter(r => r.Year);
+                new Chart(document.getElementById(elemId), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(r => r.Year),
+                        datasets: [
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e' },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12' },
+                            { label: 'Health', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71' },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60' },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db' },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+                });
+            }
+        });
+    }
 
-    // 2. Migration (Keep existing manual files)
-    Papa.parse('data/net_migration_long_term.csv', {
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(results) {
-            const data = results.data.filter(r => r.Year);
-            new Chart(document.getElementById('chartMigrationNet'), {
-                type: 'bar',
-                data: {
-                    labels: data.map(r => r.Year),
-                    datasets: [{
-                        label: 'Net People',
-                        data: data.map(r => r.Net_Migration),
-                        backgroundColor: data.map(r => r.Net_Migration < 0 ? '#e74c3c' : '#3498db')
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-    });
+    // --- EXECUTE ---
+    // The "Hybrid" calls try to stitch History + Live
+    drawHybridChart('chartInflation', 'Inflation', 'cpi_inflation.csv', 'Inflation %', '#e74c3c');
+    drawHybridChart('chartDebt', 'Debt_GDP', 'national_debt.csv', 'Debt % GDP', '#8e44ad');
+    drawHybridChart('chartGDP', 'GDP_Growth', 'gdp_growth.csv', 'GDP Growth %', '#2c3e50', 'line');
+    drawHybridChart('chartUnemployment', 'Unemployment', 'unemployment.csv', 'Unemployment %', '#2980b9');
 
-    Papa.parse('data/migration_inflow_breakdown.csv', {
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(results) {
-            const data = results.data.filter(r => r.Year);
-            new Chart(document.getElementById('chartMigrationStack'), {
-                type: 'bar',
-                data: {
-                    labels: data.map(r => r.Year),
-                    datasets: [
-                        { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e' },
-                        { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12' },
-                        { label: 'Health & Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71' },
-                        { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60' },
-                        { label: 'Students', data: data.map(r => r.Study), backgroundColor: '#3498db' },
-                        { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
-            });
-        }
-    });
+    // Manual Migration
+    drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
+    drawStacked('chartMigrationStack', 'migration_inflow_breakdown.csv');
 
 </script>
+    
 </body>
 </html>
