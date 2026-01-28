@@ -8,130 +8,186 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; padding: 40px 20px; color: #333; }
-        .dashboard { max-width: 1100px; margin: 0 auto; }
+        :root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
         
-        /* Card Styling */
-        .card { 
-            background: white; 
-            padding: 35px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
-            margin-bottom: 40px;
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Headers */
+        header { text-align: center; margin-bottom: 50px; padding: 40px 0; border-bottom: 3px solid #dfe6e9; }
+        h1 { margin: 0; font-size: 2.5rem; color: var(--primary); letter-spacing: -1px; }
+        .subtitle { color: #7f8c8d; margin-top: 10px; font-size: 1.1rem; }
+        
+        /* Section Dividers */
+        .section-title { 
+            font-size: 1.8rem; color: var(--primary); margin: 60px 0 30px 0; 
+            border-left: 5px solid #3498db; padding-left: 15px; 
         }
+
+        /* Grid Layout */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; }
         
-        h1 { text-align: center; margin-bottom: 50px; font-weight: 800; color: #2c3e50; }
-        h2 { margin-top: 0; font-size: 1.4rem; border-left: 5px solid #3498db; padding-left: 15px; margin-bottom: 20px; color: #2c3e50; }
-        .chart-desc { font-size: 0.95rem; color: #666; margin-bottom: 20px; line-height: 1.5; }
-        .source { font-size: 0.8rem; color: #95a5a6; text-align: right; display: block; margin-top: 15px; }
+        /* Cards */
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; color: #34495e; font-size: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
         
-        canvas { width: 100% !important; height: 400px !important; }
+        /* Badges */
+        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
+        .live { background: #e1f7d5; color: #2ecc71; border: 1px solid #2ecc71; } /* Green for Auto */
+        .manual { background: #fff3cd; color: #f39c12; border: 1px solid #f39c12; } /* Orange for Manual */
+
+        /* Chart Sizing */
+        .chart-box { position: relative; height: 350px; width: 100%; }
+        
+        /* Footer */
+        footer { text-align: center; margin-top: 60px; color: #95a5a6; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
+<div class="container">
+    <header>
         <h1>The UK Data Atlas</h1>
+        <div class="subtitle">Definitive Data vs. Extreme Narratives</div>
+    </header>
 
+    <div class="section-title">Chapter 1: The Economy</div>
+    <div class="grid">
+        
         <div class="card">
-            <h2>1. The Cost of Living (Inflation)</h2>
-            <div style="position: relative; height:400px; width:100%">
-                <canvas id="inflationChart"></canvas>
-            </div>
-            <span class="source">Source: ONS Series MM23 (Auto-Updated)</span>
+            <h3>Inflation (CPI) <span class="badge live">Live Update</span></h3>
+            <div class="chart-box"><canvas id="chartInflation"></canvas></div>
         </div>
 
         <div class="card">
-            <h2>2. The Long View: Net Migration (1975–2023)</h2>
-            <p class="chart-desc">The difference between people arriving and people leaving.</p>
-            <div style="position: relative; height:400px; width:100%">
-                <canvas id="migrationChart"></canvas>
-            </div>
-            <span class="source">Source: ONS Long-Term International Migration</span>
+            <h3>National Debt (% of GDP) <span class="badge live">Live Update</span></h3>
+            <div class="chart-box"><canvas id="chartDebt"></canvas></div>
         </div>
 
         <div class="card">
-            <h2>3. The "Explosion" Explained: Who is Entering? (2018–2023)</h2>
-            <p class="chart-desc">Breaking down the inflow by visa type. Note the surge in <strong>Health & Care</strong> (Green) and <strong>Humanitarian/Ukraine</strong> (Orange) vs the steady baseline of other work.</p>
-            <div style="position: relative; height:400px; width:100%">
-                <canvas id="breakdownChart"></canvas>
-            </div>
-            <span class="source">Source: ONS Inflows by Reason</span>
+            <h3>GDP Growth (Quarterly) <span class="badge live">Live Update</span></h3>
+            <div class="chart-box"><canvas id="chartGDP"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>Unemployment Rate <span class="badge live">Live Update</span></h3>
+            <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
         </div>
     </div>
 
-    <script>
-        // --- CHART 1: INFLATION ---
-        Papa.parse('data/cpi_inflation.csv', {
-            download: true, header: true,
+    <div class="section-title">Chapter 2: Migration & Borders</div>
+    <div class="grid">
+        
+        <div class="card">
+            <h3>Net Migration History <span class="badge manual">Annual Data</span></h3>
+            <div class="chart-box"><canvas id="chartMigrationNet"></canvas></div>
+        </div>
+
+        <div class="card">
+            <h3>The "Inflow" Breakdown <span class="badge manual">Visa Data</span></h3>
+            <div class="chart-box"><canvas id="chartMigrationStack"></canvas></div>
+        </div>
+    </div>
+
+    <footer>
+        Data Sourced directly from ONS API & Bulletins. <br>
+        Automated Daily Updates via GitHub Actions.
+    </footer>
+</div>
+
+<script>
+    // --- HELPER FUNCTIONS ---
+    
+    // 1. Standard Line Chart (Economy)
+    function drawLineChart(elemId, csvPath, label, color, tension=0.3) {
+        Papa.parse(csvPath, {
+            download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
-                const data = results.data.filter(r => r.Date && r.CPI_Inflation);
-                new Chart(document.getElementById('inflationChart'), {
+                const data = results.data.filter(r => r.Date && r.Value);
+                new Chart(document.getElementById(elemId), {
                     type: 'line',
                     data: {
                         labels: data.map(r => r.Date),
                         datasets: [{
-                            label: 'Inflation (%)',
-                            data: data.map(r => r.CPI_Inflation),
-                            borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.1)',
-                            borderWidth: 2, pointRadius: 0, fill: true, tension: 0.3
+                            label: label,
+                            data: data.map(r => r.Value),
+                            borderColor: color,
+                            backgroundColor: color + '15', // Transparent fill
+                            borderWidth: 2, pointRadius: 0, hoverRadius: 4,
+                            fill: true, tension: tension
                         }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'category', ticks: { maxTicksLimit: 10 } }, y: { beginAtZero: true } } }
-                });
-            }
-        });
-
-        // --- CHART 2: NET MIGRATION ---
-        Papa.parse('data/net_migration_long_term.csv', {
-            download: true, header: true,
-            complete: function(results) {
-                const data = results.data.filter(r => r.Year && r.Net_Migration);
-                new Chart(document.getElementById('migrationChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.map(r => r.Year),
-                        datasets: [{
-                            label: 'Net Migration',
-                            data: data.map(r => r.Net_Migration),
-                            backgroundColor: data.map(r => r.Net_Migration < 0 ? '#e74c3c' : '#2980b9'),
-                            borderRadius: 2
-                        }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-                });
-            }
-        });
-
-        // --- CHART 3: BREAKDOWN (STACKED) ---
-        Papa.parse('data/migration_inflow_breakdown.csv', {
-            download: true, header: true,
-            complete: function(results) {
-                const data = results.data.filter(r => r.Year);
-                new Chart(document.getElementById('breakdownChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.map(r => r.Year),
-                        datasets: [
-                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e' }, // Dark Grey
-                            { label: 'Humanitarian (Ukraine/HK)', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12' }, // Orange
-                            { label: 'Health & Care Work', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71' }, // Green
-                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60' }, // Dark Green
-                            { label: 'Students', data: data.map(r => r.Study), backgroundColor: '#3498db' }, // Blue
-                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6' } // Purple
-                        ]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, beginAtZero: true }
-                        }
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: false } }
                     }
                 });
             }
         });
-    </script>
+    }
+
+    // 2. Bar Chart (Net Migration)
+    function drawBarChart(elemId, csvPath) {
+        Papa.parse(csvPath, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data.filter(r => r.Year);
+                new Chart(document.getElementById(elemId), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(r => r.Year),
+                        datasets: [{
+                            label: 'Net People',
+                            data: data.map(r => r.Net_Migration),
+                            backgroundColor: data.map(r => r.Net_Migration < 0 ? '#e74c3c' : '#3498db')
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        });
+    }
+
+    // 3. Stacked Chart (Visa Breakdown)
+    function drawStackedChart(elemId, csvPath) {
+        Papa.parse(csvPath, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data.filter(r => r.Year);
+                new Chart(document.getElementById(elemId), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(r => r.Year),
+                        datasets: [
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e' },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12' },
+                            { label: 'Health & Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71' },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60' },
+                            { label: 'Students', data: data.map(r => r.Study), backgroundColor: '#3498db' },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { stacked: true }, y: { stacked: true } }
+                    }
+                });
+            }
+        });
+    }
+
+    // --- EXECUTE DRAWING ---
+    // Automated Data
+    drawLineChart('chartInflation', 'data/cpi_inflation.csv', 'Inflation %', '#e74c3c');
+    drawLineChart('chartDebt', 'data/national_debt.csv', 'Debt % GDP', '#8e44ad');
+    drawLineChart('chartGDP', 'data/gdp_growth.csv', 'GDP Growth %', '#2c3e50', 0.1);
+    drawLineChart('chartUnemployment', 'data/unemployment.csv', 'Unemployment Rate %', '#2980b9');
+
+    // Manual Data
+    drawBarChart('chartMigrationNet', 'data/net_migration_long_term.csv');
+    drawStackedChart('chartMigrationStack', 'data/migration_inflow_breakdown.csv');
+
+</script>
 </body>
 </html>
