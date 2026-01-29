@@ -186,7 +186,7 @@
         });
     }
     
-    // --- STACKED CHART WITH NET LINE OVERLAY ---
+// --- STACKED CHART WITH NET LINE OVERLAY (FIXED) ---
     function drawStacked(elemId, file) {
          Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -197,36 +197,35 @@
                     data: {
                         labels: data.map(r => r.Year),
                         datasets: [
-                            // 1. The Line (Net Migration) - Draws ON TOP
+                            // 1. THE LINE (Floats freely, no 'stack' property)
                             { 
                                 type: 'line',
                                 label: 'ACTUAL Net Migration (Balance)', 
                                 data: data.map(r => r.Net_Total), 
-                                borderColor: '#2c3e50', // Dark Grey
-                                borderWidth: 3,
+                                borderColor: '#2c3e50', 
+                                borderWidth: 4,
                                 pointRadius: 4,
                                 pointBackgroundColor: '#fff',
-                                order: 0 // Force it to the front
+                                order: 0,
+                                tension: 0.1
                             },
-                            // 2. The Stacks (Inflow)
-                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', order: 1 },
-                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', order: 1 },
-                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', order: 1 },
-                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', order: 1 },
-                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', order: 1 },
-                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', order: 1 }
+                            // 2. THE STACKS (Grouped by 'stack: stack1')
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', stack: 'stack1', order: 1 },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', stack: 'stack1', order: 1 },
+                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', stack: 'stack1', order: 1 },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', stack: 'stack1', order: 1 },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', stack: 'stack1', order: 1 },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', stack: 'stack1', order: 1 }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            tooltip: { mode: 'index', intersect: false }
-                        },
+                        interaction: { mode: 'index', intersect: false },
                         scales: {
-                            x: { stacked: true },
+                            x: { stacked: true }, // X must remain stacked
                             y: { 
-                                stacked: true, // Bars stack
-                                title: { display: true, text: 'People Arriving' }
+                                stacked: false, // <--- CRITICAL CHANGE: Turn off global stacking
+                                title: { display: true, text: 'People' }
                             }
                         }
                     }
@@ -234,7 +233,7 @@
             }
         });
     }
-
+    
     // --- EXECUTE ---
     // The "Hybrid" calls try to stitch History + Live
     drawHybridChart('chartInflation', 'Inflation', 'cpi_inflation.csv', 'Inflation %', '#e74c3c');
