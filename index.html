@@ -186,6 +186,7 @@
         });
     }
     
+    // --- STACKED CHART WITH NET LINE OVERLAY ---
     function drawStacked(elemId, file) {
          Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -196,15 +197,39 @@
                     data: {
                         labels: data.map(r => r.Year),
                         datasets: [
-                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e' },
-                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12' },
-                            { label: 'Health', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71' },
-                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60' },
-                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db' },
-                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6' }
+                            // 1. The Line (Net Migration) - Draws ON TOP
+                            { 
+                                type: 'line',
+                                label: 'ACTUAL Net Migration (Balance)', 
+                                data: data.map(r => r.Net_Total), 
+                                borderColor: '#2c3e50', // Dark Grey
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#fff',
+                                order: 0 // Force it to the front
+                            },
+                            // 2. The Stacks (Inflow)
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', order: 1 },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', order: 1 },
+                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', order: 1 },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', order: 1 },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', order: 1 },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', order: 1 }
                         ]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { stacked: true },
+                            y: { 
+                                stacked: true, // Bars stack
+                                title: { display: true, text: 'People Arriving' }
+                            }
+                        }
+                    }
                 });
             }
         });
