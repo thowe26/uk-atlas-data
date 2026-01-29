@@ -155,39 +155,44 @@
         });
     }
 
-// --- 4. MIGRATION: THE "MIRROR" CHART (Clean Version) ---
+
+    // --- 4. MIGRATION: THE "MOUNTAIN" MIRROR CHART ---
     function drawMirrorChart(elemId, file) {
          Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
                 const data = results.data.filter(r => r.Year);
                 
-                // Calculate Emigration (Negative Value)
+                // Calculate Emigration
                 const emigrationData = data.map(r => {
                     const inflow = parseInt(r.Asylum) + parseInt(r.Humanitarian) + parseInt(r.Work_Health) + parseInt(r.Work_Other) + parseInt(r.Study) + parseInt(r.Family);
                     const net = parseInt(r.Net_Total);
-                    // Emigration is the difference. We make it negative for the chart.
                     return net - inflow; 
                 });
 
                 new Chart(document.getElementById(elemId), {
-                    type: 'bar',
+                    type: 'line', // <--- Changed from 'bar' to 'line'
                     data: {
                         labels: data.map(r => r.Year),
                         datasets: [
-                            // POSITIVE STACKS (Inflow) - The "Mountain"
-                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', stack: 'inflow' },
-                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', stack: 'inflow' },
-                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', stack: 'inflow' },
-                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', stack: 'inflow' },
-                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', stack: 'inflow' },
-                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', stack: 'inflow' },
+                            // POSITIVE MOUNTAIN (Inflow)
+                            // We add 'fill: true' and 'tension: 0.4' to make it a smooth mountain
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', borderColor: '#34495e', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', borderColor: '#f39c12', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
+                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', borderColor: '#2ecc71', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', borderColor: '#27ae60', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', borderColor: '#3498db', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', borderColor: '#9b59b6', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
                             
-                            // NEGATIVE STACK (Outflow) - The "Valley"
+                            // NEGATIVE REFLECTION (Emigration)
                             { 
                                 label: 'Emigration (Leaving)', 
                                 data: emigrationData, 
-                                backgroundColor: '#e74c3c', // Red
+                                backgroundColor: '#e74c3c', 
+                                borderColor: '#e74c3c',
+                                fill: true,
+                                pointRadius: 0,     // Hides the dots
+                                tension: 0.4,       // Smooths the curve
                                 stack: 'outflow' 
                             }
                         ]
@@ -196,32 +201,21 @@
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         scales: {
-                            x: { 
-                                stacked: true,
-                                grid: { display: false }
-                            },
+                            x: { grid: { display: false } },
                             y: { 
                                 stacked: true, 
                                 title: { display: true, text: 'People (Thousands)' },
-                                ticks: {
-                                    // Make negative numbers look cleaner (e.g. "-500k")
-                                    callback: function(value) { return value / 1000 + 'k'; }
-                                }
+                                ticks: { callback: function(value) { return value / 1000 + 'k'; } }
                             }
+                        },
+                        elements: {
+                            line: { borderWidth: 1 } // Thin borders between layers
                         },
                         plugins: {
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed.y !== null) {
-                                            // Format numbers with commas (e.g. 1,200,000)
-                                            label += Math.abs(context.parsed.y).toLocaleString();
-                                        }
-                                        return label;
+                                        return context.dataset.label + ': ' + Math.abs(context.parsed.y).toLocaleString();
                                     }
                                 }
                             }
