@@ -155,19 +155,19 @@
         });
     }
 
-    // --- 4. MIGRATION: THE "MIRROR" CHART ---
-    // This splits Inflow (Positive) and Emigration (Negative)
+// --- 4. MIGRATION: THE "MIRROR" CHART (Clean Version) ---
     function drawMirrorChart(elemId, file) {
          Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
                 const data = results.data.filter(r => r.Year);
                 
-                // Calculate "Emigration" on the fly (Net - Inflow)
-                // Since Net is smaller than Inflow, this result is negative, which is perfect for the chart.
+                // Calculate Emigration (Negative Value)
                 const emigrationData = data.map(r => {
                     const inflow = parseInt(r.Asylum) + parseInt(r.Humanitarian) + parseInt(r.Work_Health) + parseInt(r.Work_Other) + parseInt(r.Study) + parseInt(r.Family);
-                    return parseInt(r.Net_Total) - inflow; 
+                    const net = parseInt(r.Net_Total);
+                    // Emigration is the difference. We make it negative for the chart.
+                    return net - inflow; 
                 });
 
                 new Chart(document.getElementById(elemId), {
@@ -175,27 +175,20 @@
                     data: {
                         labels: data.map(r => r.Year),
                         datasets: [
-                            // THE NET LINE (Overlay)
-                            { 
-                                type: 'line', label: 'Net Balance', 
-                                data: data.map(r => r.Net_Total), 
-                                borderColor: '#2c3e50', borderWidth: 3, pointRadius: 3, pointBackgroundColor: '#fff',
-                                order: 0
-                            },
-                            // THE POSITIVE STACKS (Inflow)
-                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', stack: 'inflow', order: 2 },
-                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', stack: 'inflow', order: 2 },
-                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', stack: 'inflow', order: 2 },
-                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', stack: 'inflow', order: 2 },
-                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', stack: 'inflow', order: 2 },
-                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', stack: 'inflow', order: 2 },
-                            // THE NEGATIVE BAR (Emigration)
+                            // POSITIVE STACKS (Inflow) - The "Mountain"
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', stack: 'inflow' },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', stack: 'inflow' },
+                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', stack: 'inflow' },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', stack: 'inflow' },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', stack: 'inflow' },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', stack: 'inflow' },
+                            
+                            // NEGATIVE STACK (Outflow) - The "Valley"
                             { 
                                 label: 'Emigration (Leaving)', 
                                 data: emigrationData, 
-                                backgroundColor: '#e74c3c', // Red for leaving
-                                stack: 'outflow', // Separate stack so it goes down
-                                order: 1
+                                backgroundColor: '#e74c3c', // Red
+                                stack: 'outflow' 
                             }
                         ]
                     },
@@ -203,14 +196,42 @@
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         scales: {
-                            x: { stacked: true },
-                            y: { stacked: true, title: { display: true, text: 'People (+ Arriving / - Leaving)' } }
+                            x: { 
+                                stacked: true,
+                                grid: { display: false }
+                            },
+                            y: { 
+                                stacked: true, 
+                                title: { display: true, text: 'People (Thousands)' },
+                                ticks: {
+                                    // Make negative numbers look cleaner (e.g. "-500k")
+                                    callback: function(value) { return value / 1000 + 'k'; }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            // Format numbers with commas (e.g. 1,200,000)
+                                            label += Math.abs(context.parsed.y).toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
                         }
                     }
                 });
             }
         });
     }
+    
 
     // --- EXECUTE ALL CHARTS ---
     drawHybridChart('chartInflation', 'Inflation', 'cpi_inflation.csv', 'Inflation %', '#e74c3c');
