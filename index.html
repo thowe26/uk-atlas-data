@@ -128,41 +128,55 @@
         });
     }
 
- // --- RENDER FUNCTION (Fixed Dates) ---
-    function renderChart(elemId, dataArray, label, color, type) {
-        new Chart(document.getElementById(elemId), {
-            type: type,
-            data: {
-                labels: dataArray.map(d => d.date),
-                datasets: [{
-                    label: label,
-                    data: dataArray.map(d => d.value),
-                    borderColor: color,
-                    backgroundColor: color + '20',
-                    borderWidth: 2, pointRadius: 0, hoverRadius: 4,
-                    fill: true, tension: 0.2
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                scales: { 
-                    x: { 
-                        grid: { display: false },
-                        ticks: { 
-                            maxTicksLimit: 12,
-                            // FORCE YEAR FORMAT: Just take the first 4 characters
-                            callback: function(value, index, values) {
-                                const label = this.getLabelForValue(value);
-                                return label.substring(0, 4);
-                            }
-                        } 
+// --- STACKED CHART WITH NET LINE OVERLAY (FINAL FIX) ---
+    function drawStacked(elemId, file) {
+         Papa.parse(`data/${file}`, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data.filter(r => r.Year);
+                new Chart(document.getElementById(elemId), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(r => r.Year),
+                        datasets: [
+                            // 1. THE LINE (Stack Group "line")
+                            { 
+                                type: 'line',
+                                label: 'ACTUAL Net Migration (Balance)', 
+                                data: data.map(r => r.Net_Total), 
+                                borderColor: '#2c3e50', 
+                                borderWidth: 4,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#fff',
+                                order: 0,
+                                tension: 0.1,
+                                stack: 'line' // <--- Key Change: Separate Stack ID
+                            },
+                            // 2. THE STACKS (Stack Group "bars")
+                            { label: 'Asylum', data: data.map(r => r.Asylum), backgroundColor: '#34495e', stack: 'bars', order: 1 },
+                            { label: 'Humanitarian', data: data.map(r => r.Humanitarian), backgroundColor: '#f39c12', stack: 'bars', order: 1 },
+                            { label: 'Health Care', data: data.map(r => r.Work_Health), backgroundColor: '#2ecc71', stack: 'bars', order: 1 },
+                            { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', stack: 'bars', order: 1 },
+                            { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', stack: 'bars', order: 1 },
+                            { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', stack: 'bars', order: 1 }
+                        ]
                     },
-                    y: { beginAtZero: false } 
-                }
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: { stacked: true },
+                            y: { 
+                                stacked: true, // <--- Key Change: Turn stacking BACK ON
+                                title: { display: true, text: 'People' }
+                            }
+                        }
+                    }
+                });
             }
         });
     }
+    
 
     // --- MIGRATION (Manual Only) ---
     function drawManualBar(elemId, file, colLabel, colValue) {
