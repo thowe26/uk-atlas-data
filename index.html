@@ -111,13 +111,14 @@
             ww1: {
                 type: 'box',
                 xMin: 1914, xMax: 1918,
-                backgroundColor: 'rgba(50, 50, 50, 0.2)', // Tone: 20%
+                backgroundColor: 'rgba(50, 50, 50, 0.2)', 
                 borderWidth: 0,
                 label: { 
-                    content: 'World War 1', // Full Text
+                    content: 'World War 1', 
                     display: true, 
-                    // No 'position: start' means it defaults to CENTER
-                    yAdjust: 20, // Pushes text down 20px from top
+                    // KEY CHANGE: Center horizontally (x), but stick to Top (y)
+                    position: { x: 'center', y: 'start' },
+                    yAdjust: 10, // Push down 10px from the top edge
                     color: '#333', 
                     font: { weight: 'bold', size: 11 } 
                 }
@@ -125,12 +126,13 @@
             ww2: {
                 type: 'box',
                 xMin: 1939, xMax: 1945,
-                backgroundColor: 'rgba(50, 50, 50, 0.2)', // Tone: 20%
+                backgroundColor: 'rgba(50, 50, 50, 0.2)',
                 borderWidth: 0,
                 label: { 
-                    content: 'World War 2', // Full Text
+                    content: 'World War 2', 
                     display: true, 
-                    yAdjust: 20, 
+                    position: { x: 'center', y: 'start' },
+                    yAdjust: 10, 
                     color: '#333', 
                     font: { weight: 'bold', size: 11 } 
                 }
@@ -143,7 +145,8 @@
                 label: { 
                     content: 'Covid', 
                     display: true, 
-                    yAdjust: 20, 
+                    position: { x: 'center', y: 'start' },
+                    yAdjust: 10, 
                     color: '#c0392b', 
                     font: { weight: 'bold', size: 10 } 
                 }
