@@ -74,13 +74,13 @@
 <div class="container">
     <header>
         <h1>The UK Data Atlas</h1>
-        <div class="subtitle">The Long View: 1950 – 2025</div>
+        <div class="subtitle">The Long View</div>
     </header>
 
     <div class="section-title">Chapter 1: The Economy</div>
     <div class="grid">
         <div class="card">
-            <h3>Inflation (CPI) <span class="badge hist">1950 – Present</span></h3>
+            <h3>Inflation (CPI) <span class="badge hist">1900 – Present</span></h3>
             <div class="chart-box"><canvas id="chartInflation"></canvas></div>
         </div>
         <div class="card">
@@ -258,7 +258,15 @@
     }
 
     // --- EXECUTE ---
-    drawHybridChart('chartInflation', 'Inflation', 'cpi_inflation.csv', 'Inflation %', '#e74c3c');
+    // Using the simple "renderChart" because we now have one perfect manual file
+Papa.parse('data/cpi_1900_2024.csv', {
+    download: true, header: true, skipEmptyLines: true,
+    complete: function(results) {
+        // Convert to format: { date: "1900", value: 4.8 }
+        const data = results.data.map(r => ({ date: r.Year, value: parseFloat(r.Inflation) }));
+        renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line');
+    }
+});
     drawHybridChart('chartDebt', 'Debt_GDP', 'national_debt.csv', 'Debt % GDP', '#8e44ad');
     drawHybridChart('chartGDP', 'GDP_Growth', 'gdp_growth.csv', 'GDP Growth %', '#2c3e50', 'line');
     drawHybridChart('chartUnemployment', 'Unemployment', 'unemployment.csv', 'Unemployment %', '#2980b9');
