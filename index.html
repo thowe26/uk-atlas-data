@@ -80,7 +80,7 @@
             <div class="chart-box"><canvas id="chartDebt"></canvas></div>
         </div>
         <div class="card">
-            <h3>GDP Growth (Annual) <span class="badge hist">1950 – Present</span></h3>
+            <h3>GDP Growth (Annual) <span class="badge hist">1900 – Present</span></h3>
             <div class="chart-box"><canvas id="chartGDP"></canvas></div>
         </div>
         <div class="card">
@@ -211,7 +211,7 @@
 
     // --- 3. EXECUTE CHARTS ---
     
-    // CPI: 1900-2025 (With Context)
+    // CPI (Context: YES)
     Papa.parse('data/cpi_long.csv', {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
@@ -220,16 +220,26 @@
         }
     });
 
-    // DEBT: 1900-2025 (With Context - UPDATED)
+    // DEBT (Context: YES)
     Papa.parse('data/national_debt_long.csv', {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) }));
-            renderChart('chartDebt', data, 'Debt % GDP', '#8e44ad', 'line', true); // <--- True adds the Overlay
+            renderChart('chartDebt', data, 'Debt % GDP', '#8e44ad', 'line', true); 
         }
     });
 
-    // OTHER ECONOMY CHARTS
+    // GDP (Context: YES - NEW)
+    Papa.parse('data/gdp_growth_long.csv', {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) }));
+            // Switched to 'line' for better long-term legibility
+            renderChart('chartGDP', data, 'GDP Growth %', '#2c3e50', 'line', true); 
+        }
+    });
+
+    // UNEMPLOYMENT (Standard)
     function drawSimpleChart(elemId, file, colYear, colVal, label, color, type='line', useContext=false) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -239,7 +249,6 @@
             }
         });
     }
-    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); 
     drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
 
     // MIGRATION CHARTS
@@ -295,7 +304,7 @@
         });
     }
 
-    // EXECUTE MIGRATION
+    // EXECUTE
     drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
     drawMirrorChart('chartMigrationMirror', 'migration_extended.csv');
 
