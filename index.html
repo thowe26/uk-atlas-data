@@ -105,7 +105,8 @@
 </div>
 
 <script>
-    // --- 1. THE DEFINITIVE CONTEXT LAYER ---
+    
+// --- 1. THE DEFINITIVE CONTEXT LAYER ---
     const historicalContext = {
         annotations: {
             ww1: {
@@ -116,11 +117,9 @@
                 label: { 
                     content: 'World War 1', 
                     display: true, 
-                    // KEY CHANGE: Center horizontally (x), but stick to Top (y)
                     position: { x: 'center', y: 'start' },
-                    yAdjust: 5, // Push down 5px from the top edge
-                    color: '#333', 
-                    font: { weight: 'bold', size: 11 } 
+                    yAdjust: 5, 
+                    color: '#333', font: { weight: 'bold', size: 11 } 
                 }
             },
             ww2: {
@@ -133,8 +132,20 @@
                     display: true, 
                     position: { x: 'center', y: 'start' },
                     yAdjust: 5, 
-                    color: '#333', 
-                    font: { weight: 'bold', size: 11 } 
+                    color: '#333', font: { weight: 'bold', size: 11 } 
+                }
+            },
+            energy: { // <--- NEW EVENT
+                type: 'box',
+                xMin: 1973, xMax: 1976,
+                backgroundColor: 'rgba(50, 50, 50, 0.2)',
+                borderWidth: 0,
+                label: { 
+                    content: 'Energy Crisis', 
+                    display: true, 
+                    position: { x: 'center', y: 'start' },
+                    yAdjust: 5, 
+                    color: '#333', font: { weight: 'bold', size: 11 } 
                 }
             },
             covid: {
@@ -147,12 +158,12 @@
                     display: true, 
                     position: { x: 'center', y: 'start' },
                     yAdjust: 5, 
-                    color: '#c0392b', 
-                    font: { weight: 'bold', size: 10 } 
+                    color: '#c0392b', font: { weight: 'bold', size: 10 } 
                 }
             }
         }
     };
+    
 
     // --- 2. UNIVERSAL RENDER FUNCTION ---
     function renderChart(elemId, dataArray, label, color, type, addContext = false) {
