@@ -19,7 +19,8 @@
             padding: 15px;
         }
         
-        .container { max-width: 900px; margin: 0 auto; } /* Widened slightly for 5 cards */
+        /* Restricted width for single column readability */
+        .container { max-width: 800px; margin: 0 auto; } 
         
         header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
         h1 { margin: 0; font-size: 2rem; color: var(--primary); letter-spacing: -1px; }
@@ -30,7 +31,8 @@
             border-left: 5px solid #3498db; padding-left: 15px; 
         }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        /* FORCE SINGLE COLUMN ALWAYS */
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         
         .card { 
             background: var(--card-bg); 
@@ -88,7 +90,7 @@
             <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
         </div>
         <div class="card">
-            <h3>Real Debt Per Person (2024 £) <span class="badge hist">1900 – Present</span></h3>
+            <h3>Real Debt Per Person (Inflation adjusted) <span class="badge hist">1900 – Present</span></h3>
             <div class="chart-box"><canvas id="chartDebtCapita"></canvas></div>
         </div>
     </div>
@@ -140,7 +142,6 @@
                     x: isYearly ? { type: 'linear', min: parseInt(dataArray[0].date), max: parseInt(dataArray[dataArray.length - 1].date), ticks: { callback: v => String(v).replace(/,/g, '') } } : { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
                     y: { 
                         beginAtZero: false,
-                        // NEW: Currency formatter if needed
                         ticks: { callback: function(value) { return isCurrency ? '£' + (value/1000) + 'k' : value; } }
                     } 
                 },
@@ -154,28 +155,11 @@
     }
 
     // --- 3. EXECUTE ECONOMY ---
-    
-    // CPI
     Papa.parse('data/cpi_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInflation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Inflation %', '#e74c3c', 'line', true); } });
-
-    // DEBT % GDP
     Papa.parse('data/national_debt_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebt', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) })), 'Debt % GDP', '#8e44ad', 'line', true); } });
-
-    // GDP GROWTH
     Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDP', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) })), 'GDP Growth %', '#2c3e50', 'line', true); } });
-
-    // UNEMPLOYMENT
     Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
-
-    // NEW: DEBT PER CAPITA (REAL)
-    Papa.parse('data/debt_per_capita.csv', { 
-        download: true, header: true, skipEmptyLines: true, 
-        complete: function(results) { 
-            const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) }));
-            // Note: true for Context, true for Currency Formatting
-            renderChart('chartDebtCapita', data, 'Real Debt', '#d35400', 'line', true, true); 
-        } 
-    });
+    Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
 
     // --- 4. EXECUTE MIGRATION ---
     function drawManualBar(elemId, file, colLabel, colValue) {
