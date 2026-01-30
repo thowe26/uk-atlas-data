@@ -10,16 +10,14 @@
     <style>
         :root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
         
-        /* MOBILE FIRST BASE STYLES */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg); 
             color: #333; 
             margin: 0; 
-            padding: 15px; /* Smaller padding for mobile */
+            padding: 15px;
         }
         
-        /* Container: max-width 800px makes single-column look good on desktop too */
         .container { max-width: 800px; margin: 0 auto; }
         
         header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
@@ -31,16 +29,11 @@
             border-left: 5px solid #3498db; padding-left: 15px; 
         }
 
-        /* THE GRID: Force 1 Column */
-        .grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* Always 1 column */
-            gap: 20px; 
-        }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         
         .card { 
             background: var(--card-bg); 
-            padding: 15px; /* Tighter padding for mobile */
+            padding: 15px; 
             border-radius: 12px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
         }
@@ -55,17 +48,15 @@
         .hist { background: #2c3e50; color: #fff; } 
         .manual { background: #fff3cd; color: #f39c12; border: 1px solid #f39c12; }
 
-        /* Chart height: slightly shorter on mobile to see more content */
         .chart-box { position: relative; height: 300px; width: 100%; }
         
         footer { text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.8rem; }
 
-        /* DESKTOP TWEAKS (Screens wider than 600px) */
         @media (min-width: 600px) {
             body { padding: 30px; }
             h1 { font-size: 2.5rem; }
             .card { padding: 25px; }
-            .chart-box { height: 350px; } /* Taller charts on desktop */
+            .chart-box { height: 350px; }
         }
     </style>
 </head>
@@ -113,7 +104,7 @@
 </div>
 
 <script>
-    // --- 1. RENDER FUNCTION (Economy) ---
+    // --- 1. RENDER FUNCTION (Universal) ---
     function renderChart(elemId, dataArray, label, color, type) {
         new Chart(document.getElementById(elemId), {
             type: type,
@@ -135,44 +126,39 @@
                     x: { 
                         grid: { display: false },
                         ticks: { 
-                            maxTicksLimit: 8, // Reduced ticks for mobile
-                            callback: function(value) { return this.getLabelForValue(value).substring(0, 4); }
+                            maxTicksLimit: 8, 
+                            callback: function(value) { 
+                                const lbl = this.getLabelForValue(value);
+                                return lbl ? lbl.substring(0, 4) : "";
+                            } 
                         } 
                     },
                     y: { beginAtZero: false } 
                 },
-                plugins: { legend: { display: false } } // Hide legend on mobile to save space (title is enough)
+                plugins: { legend: { display: false } }
             }
         });
     }
 
-    // --- 2. THE HYBRID STITCHER ---
-    function drawHybridChart(elemId, historyCol, liveFile, label, color, type='line') {
-        Papa.parse('data/historical_economy.csv', {
+    // --- 2. LOAD EXTERNAL CSV (Clean) ---
+    function drawSimpleChart(elemId, file, colYear, colVal, label, color, type='line') {
+        Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
-            complete: function(histResults) {
-                let combinedData = histResults.data
-                    .filter(r => r.Year)
-                    .map(r => ({ date: r.Year, value: parseFloat(r[historyCol]) }));
-
-                Papa.parse(`data/${liveFile}`, {
-                    download: true, header: true, skipEmptyLines: true,
-                    complete: function(liveResults) {
-                        const liveData = liveResults.data
-                            .filter(r => r.Date && r.Value)
-                            .map(r => ({ date: r.Date, value: parseFloat(r.Value) }))
-                            .filter(item => parseInt(item.date.substring(0,4)) >= 2024);
-
-                        if (liveData.length > 0) combinedData = combinedData.concat(liveData);
-                        renderChart(elemId, combinedData, label, color, type);
-                    },
-                    error: function() { renderChart(elemId, combinedData, label, color, type); }
-                });
+            complete: function(results) {
+                // Map the CSV columns to our chart format
+                const data = results.data
+                    .filter(r => r[colYear]) // Ensure the row has a year
+                    .map(r => ({ 
+                        date: r[colYear], 
+                        value: parseFloat(r[colVal]) 
+                    }));
+                
+                renderChart(elemId, data, label, color, type);
             }
         });
     }
 
-    // --- 3. MIGRATION: NET HISTORY ---
+    // --- 3. MIGRATION CHARTS ---
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -190,12 +176,7 @@
                     },
                     options: { 
                         responsive: true, maintainAspectRatio: false,
-                        scales: { 
-                            x: { 
-                                grid: { display: false },
-                                ticks: { maxRotation: 0, minRotation: 0, maxTicksLimit: 6 } // Simplified X-axis for mobile
-                            } 
-                        },
+                        scales: { x: { grid: { display: false }, ticks: { maxRotation: 0, minRotation: 0, maxTicksLimit: 6 } } },
                         plugins: { legend: { display: false } }
                     }
                 });
@@ -203,19 +184,15 @@
         });
     }
 
-    // --- 4. MIGRATION: THE "MOUNTAIN" MIRROR ---
     function drawMirrorChart(elemId, file) {
          Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
                 const data = results.data.filter(r => r.Year);
-                
                 const emigrationData = data.map(r => {
                     const inflow = parseInt(r.Asylum) + parseInt(r.Humanitarian) + parseInt(r.Work_Health) + parseInt(r.Work_Other) + parseInt(r.Study) + parseInt(r.Family);
-                    const net = parseInt(r.Net_Total);
-                    return net - inflow; 
+                    return parseInt(r.Net_Total) - inflow; 
                 });
-
                 new Chart(document.getElementById(elemId), {
                     type: 'line',
                     data: {
@@ -227,30 +204,18 @@
                             { label: 'Other Work', data: data.map(r => r.Work_Other), backgroundColor: '#27ae60', borderColor: '#27ae60', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
                             { label: 'Study', data: data.map(r => r.Study), backgroundColor: '#3498db', borderColor: '#3498db', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
                             { label: 'Family', data: data.map(r => r.Family), backgroundColor: '#9b59b6', borderColor: '#9b59b6', fill: true, pointRadius: 0, tension: 0.4, stack: 'inflow' },
-                            { 
-                                label: 'Emigration (Leaving)', 
-                                data: emigrationData, 
-                                backgroundColor: '#e74c3c', borderColor: '#e74c3c', fill: true, pointRadius: 0, tension: 0.4, stack: 'outflow' 
-                            }
+                            { label: 'Emigration (Leaving)', data: emigrationData, backgroundColor: '#e74c3c', borderColor: '#e74c3c', fill: true, pointRadius: 0, tension: 0.4, stack: 'outflow' }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         scales: {
-                            x: { 
-                                grid: { display: false },
-                                ticks: { maxTicksLimit: 10 } 
-                            },
-                            y: { 
-                                stacked: true, 
-                                ticks: { callback: function(value) { return value / 1000 + 'k'; } }
-                            }
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                            y: { stacked: true, ticks: { callback: function(value) { return value / 1000 + 'k'; } } }
                         },
                         elements: { line: { borderWidth: 1 } },
-                        plugins: {
-                            legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } // Compact legend at bottom
-                        }
+                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
                     }
                 });
             }
@@ -258,19 +223,16 @@
     }
 
     // --- EXECUTE ---
-    // Using the simple "renderChart" because we now have one perfect manual file
-Papa.parse('data/cpi_1900_2024.csv', {
-    download: true, header: true, skipEmptyLines: true,
-    complete: function(results) {
-        // Convert to format: { date: "1900", value: 4.8 }
-        const data = results.data.map(r => ({ date: r.Year, value: parseFloat(r.Inflation) }));
-        renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line');
-    }
-});
-    drawHybridChart('chartDebt', 'Debt_GDP', 'national_debt.csv', 'Debt % GDP', '#8e44ad');
-    drawHybridChart('chartGDP', 'GDP_Growth', 'gdp_growth.csv', 'GDP Growth %', '#2c3e50', 'line');
-    drawHybridChart('chartUnemployment', 'Unemployment', 'unemployment.csv', 'Unemployment %', '#2980b9');
+    // 1. New Deep History CPI (Reads 'cpi_long.csv')
+    drawSimpleChart('chartInflation', 'cpi_long.csv', 'Year', 'Value', 'Inflation %', '#e74c3c');
 
+    // 2. Existing Economy Charts (Using the simple loader now, assuming you update their files manually too)
+    // Note: I am pointing these to 'historical_economy.csv' for now as a fallback to ensure they load something.
+    drawSimpleChart('chartDebt', 'historical_economy.csv', 'Year', 'Debt_GDP', 'Debt % GDP', '#8e44ad');
+    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); // Bar looks better for GDP
+    drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
+
+    // 3. Migration
     drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
     drawMirrorChart('chartMigrationMirror', 'migration_extended.csv');
 
