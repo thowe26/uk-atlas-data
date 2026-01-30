@@ -105,8 +105,7 @@
 </div>
 
 <script>
-    
-// --- 1. THE DEFINITIVE CONTEXT LAYER ---
+    // --- 1. THE DEFINITIVE CONTEXT LAYER ---
     const historicalContext = {
         annotations: {
             ww1: {
@@ -135,7 +134,7 @@
                     color: '#333', font: { weight: 'bold', size: 11 } 
                 }
             },
-            energy: { // <--- NEW EVENT
+            energy: {
                 type: 'box',
                 xMin: 1973, xMax: 1976,
                 backgroundColor: 'rgba(50, 50, 50, 0.2)',
@@ -163,11 +162,9 @@
             }
         }
     };
-    
 
     // --- 2. UNIVERSAL RENDER FUNCTION ---
     function renderChart(elemId, dataArray, label, color, type, addContext = false) {
-        
         const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
         
         const xAxisLinear = {
@@ -175,20 +172,12 @@
             position: 'bottom',
             min: isYearly ? parseInt(dataArray[0].date) : undefined,
             max: isYearly ? parseInt(dataArray[dataArray.length - 1].date) : undefined,
-            ticks: { 
-                callback: function(value) { return String(value).replace(/,/g, ''); } 
-            }
+            ticks: { callback: function(value) { return String(value).replace(/,/g, ''); } }
         };
 
         const xAxisCategory = {
             grid: { display: false },
-            ticks: { 
-                maxTicksLimit: 8, 
-                callback: function(value) { 
-                    const lbl = this.getLabelForValue(value);
-                    return lbl ? lbl.substring(0, 4) : "";
-                } 
-            }
+            ticks: { maxTicksLimit: 8, callback: function(value) { return this.getLabelForValue(value).substring(0, 4); } }
         };
 
         new Chart(document.getElementById(elemId), {
@@ -213,35 +202,34 @@
                 },
                 plugins: { 
                     legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            title: function(context) {
-                                let title = context[0].label;
-                                if (context[0].parsed.x) {
-                                    title = String(context[0].parsed.x).replace(/,/g, '');
-                                }
-                                return title;
-                            }
-                        }
-                    },
+                    tooltip: { callbacks: { title: function(context) { return String(context[0].parsed.x).replace(/,/g, ''); } } },
                     annotation: addContext ? historicalContext : {}
                 }
             }
         });
     }
 
-    // --- 3. CHART LOADERS ---
+    // --- 3. EXECUTE CHARTS ---
     
-    function drawCPI() {
-        Papa.parse('data/cpi_long.csv', {
-            download: true, header: true, skipEmptyLines: true,
-            complete: function(results) {
-                const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) }));
-                renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line', true); 
-            }
-        });
-    }
+    // CPI: 1900-2025 (With Context)
+    Papa.parse('data/cpi_long.csv', {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) }));
+            renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line', true); 
+        }
+    });
 
+    // DEBT: 1900-2025 (With Context - UPDATED)
+    Papa.parse('data/national_debt_long.csv', {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) }));
+            renderChart('chartDebt', data, 'Debt % GDP', '#8e44ad', 'line', true); // <--- True adds the Overlay
+        }
+    });
+
+    // OTHER ECONOMY CHARTS
     function drawSimpleChart(elemId, file, colYear, colVal, label, color, type='line', useContext=false) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -251,7 +239,10 @@
             }
         });
     }
+    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); 
+    drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
 
+    // MIGRATION CHARTS
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -304,11 +295,7 @@
         });
     }
 
-    // --- EXECUTE ---
-    drawCPI(); 
-    drawSimpleChart('chartDebt', 'historical_economy.csv', 'Year', 'Debt_GDP', 'Debt % GDP', '#8e44ad', 'line');
-    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); 
-    drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
+    // EXECUTE MIGRATION
     drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
     drawMirrorChart('chartMigrationMirror', 'migration_extended.csv');
 
