@@ -104,15 +104,46 @@
 </div>
 
 <script>
-    // --- 1. RENDER FUNCTION (Universal) ---
+    // --- 1. SMART RENDER FUNCTION ---
+    // Automatically detects if the data is Years (Linear) or Categories (Text)
     function renderChart(elemId, dataArray, label, color, type) {
+        // Test if the dates are 4-digit years (e.g. "1900")
+        const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
+        
+        // Configuration for YEARS (1900-2025)
+        // Uses 'linear' axis to force mathematical spacing and bounds
+        const xAxisLinear = {
+            type: 'linear',
+            position: 'bottom',
+            min: parseInt(dataArray[0].date), // Force start (1900)
+            max: parseInt(dataArray[dataArray.length - 1].date), // Force end (2025)
+            ticks: {
+                callback: function(value) { return String(value).replace(/,/g, ''); } // Remove comma (1,900 -> 1900)
+            }
+        };
+
+        // Configuration for TEXT (e.g. "2024 JAN")
+        const xAxisCategory = {
+            grid: { display: false },
+            ticks: { 
+                maxTicksLimit: 8, 
+                callback: function(value) { 
+                    const lbl = this.getLabelForValue(value);
+                    return lbl ? lbl.substring(0, 4) : "";
+                } 
+            }
+        };
+
         new Chart(document.getElementById(elemId), {
             type: type,
             data: {
-                labels: dataArray.map(d => d.date),
+                // If linear, we pass {x,y} objects. If category, we pass labels + data array.
+                labels: isYearly ? undefined : dataArray.map(d => d.date),
                 datasets: [{
                     label: label,
-                    data: dataArray.map(d => d.value),
+                    data: isYearly 
+                        ? dataArray.map(d => ({x: parseInt(d.date), y: d.value})) 
+                        : dataArray.map(d => d.value),
                     borderColor: color,
                     backgroundColor: color + '20',
                     borderWidth: 2, pointRadius: 0, hoverRadius: 4,
@@ -123,16 +154,7 @@
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 scales: { 
-                    x: { 
-                        grid: { display: false },
-                        ticks: { 
-                            maxTicksLimit: 8, 
-                            callback: function(value) { 
-                                const lbl = this.getLabelForValue(value);
-                                return lbl ? lbl.substring(0, 4) : "";
-                            } 
-                        } 
-                    },
+                    x: isYearly ? xAxisLinear : xAxisCategory,
                     y: { beginAtZero: false } 
                 },
                 plugins: { legend: { display: false } }
@@ -140,19 +162,17 @@
         });
     }
 
-    // --- 2. LOAD EXTERNAL CSV (Clean) ---
+    // --- 2. LOAD EXTERNAL CSV ---
     function drawSimpleChart(elemId, file, colYear, colVal, label, color, type='line') {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
-                // Map the CSV columns to our chart format
                 const data = results.data
-                    .filter(r => r[colYear]) // Ensure the row has a year
+                    .filter(r => r[colYear]) 
                     .map(r => ({ 
                         date: r[colYear], 
                         value: parseFloat(r[colVal]) 
                     }));
-                
                 renderChart(elemId, data, label, color, type);
             }
         });
@@ -223,13 +243,12 @@
     }
 
     // --- EXECUTE ---
-    // 1. New Deep History CPI (Reads 'cpi_long.csv')
+    // 1. CPI: Using cpi_long.csv (Yearly data) -> Will Auto-detect Years and use Linear Axis
     drawSimpleChart('chartInflation', 'cpi_long.csv', 'Year', 'Value', 'Inflation %', '#e74c3c');
 
-    // 2. Existing Economy Charts (Using the simple loader now, assuming you update their files manually too)
-    // Note: I am pointing these to 'historical_economy.csv' for now as a fallback to ensure they load something.
+    // 2. Economy: Using historical_economy.csv -> Will Auto-detect Years and use Linear Axis
     drawSimpleChart('chartDebt', 'historical_economy.csv', 'Year', 'Debt_GDP', 'Debt % GDP', '#8e44ad');
-    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); // Bar looks better for GDP
+    drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); 
     drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
 
     // 3. Migration
