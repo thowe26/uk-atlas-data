@@ -106,40 +106,46 @@
 
 <script>
     // --- 1. THE DEFINITIVE CONTEXT LAYER ---
-    // Define the Eras ONCE here. All charts will use this.
     const historicalContext = {
         annotations: {
             ww1: {
                 type: 'box',
                 xMin: 1914, xMax: 1918,
-                backgroundColor: 'rgba(50, 50, 50, 0.25)', // Darker Grey
+                backgroundColor: 'rgba(50, 50, 50, 0.2)', // Tone: 20%
                 borderWidth: 0,
                 label: { 
-                    content: 'WWI', display: true, position: 'start', 
-                    yAdjust: 20, // Move DOWN 20px so it's visible
-                    color: '#333', font: { weight: 'bold' } 
+                    content: 'World War 1', // Full Text
+                    display: true, 
+                    // No 'position: start' means it defaults to CENTER
+                    yAdjust: 20, // Pushes text down 20px from top
+                    color: '#333', 
+                    font: { weight: 'bold', size: 11 } 
                 }
             },
             ww2: {
                 type: 'box',
                 xMin: 1939, xMax: 1945,
-                backgroundColor: 'rgba(50, 50, 50, 0.25)',
+                backgroundColor: 'rgba(50, 50, 50, 0.2)', // Tone: 20%
                 borderWidth: 0,
                 label: { 
-                    content: 'WWII', display: true, position: 'start', 
+                    content: 'World War 2', // Full Text
+                    display: true, 
                     yAdjust: 20, 
-                    color: '#333', font: { weight: 'bold' } 
+                    color: '#333', 
+                    font: { weight: 'bold', size: 11 } 
                 }
             },
             covid: {
                 type: 'box',
                 xMin: 2020, xMax: 2022,
-                backgroundColor: 'rgba(231, 76, 60, 0.2)', // Red Tint
+                backgroundColor: 'rgba(231, 76, 60, 0.2)', 
                 borderWidth: 0,
                 label: { 
-                    content: 'Covid', display: true, position: 'start', 
+                    content: 'Covid', 
+                    display: true, 
                     yAdjust: 20, 
-                    color: '#c0392b', font: { weight: 'bold' } 
+                    color: '#c0392b', 
+                    font: { weight: 'bold', size: 10 } 
                 }
             }
         }
@@ -148,17 +154,15 @@
     // --- 2. UNIVERSAL RENDER FUNCTION ---
     function renderChart(elemId, dataArray, label, color, type, addContext = false) {
         
-        // 1. Detect if Year Mode (Linear)
         const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
         
-        // 2. Configure X Axis
         const xAxisLinear = {
             type: 'linear',
             position: 'bottom',
             min: isYearly ? parseInt(dataArray[0].date) : undefined,
             max: isYearly ? parseInt(dataArray[dataArray.length - 1].date) : undefined,
             ticks: { 
-                callback: function(value) { return String(value).replace(/,/g, ''); } // REMOVE COMMA
+                callback: function(value) { return String(value).replace(/,/g, ''); } 
             }
         };
 
@@ -197,7 +201,6 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            // FIX TOOLTIP TITLE (Remove Comma 1,976 -> 1976)
                             title: function(context) {
                                 let title = context[0].label;
                                 if (context[0].parsed.x) {
@@ -207,7 +210,6 @@
                             }
                         }
                     },
-                    // INJECT THE MASTER CONTEXT (If requested)
                     annotation: addContext ? historicalContext : {}
                 }
             }
@@ -216,18 +218,16 @@
 
     // --- 3. CHART LOADERS ---
     
-    // CPI: Long Term -> Uses Context
     function drawCPI() {
         Papa.parse('data/cpi_long.csv', {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
                 const data = results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) }));
-                renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line', true); // <--- True enables WWI/WWII overlay
+                renderChart('chartInflation', data, 'Inflation %', '#e74c3c', 'line', true); 
             }
         });
     }
 
-    // Simple Loader (For Debt/GDP etc)
     function drawSimpleChart(elemId, file, colYear, colVal, label, color, type='line', useContext=false) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -238,7 +238,6 @@
         });
     }
 
-    // Migration Loaders (No changes needed here)
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -292,15 +291,10 @@
     }
 
     // --- EXECUTE ---
-    // 1. CPI: Uses Master Context (True)
     drawCPI(); 
-    
-    // 2. Economy: I've prepared these to use Context too, once we have the long data
     drawSimpleChart('chartDebt', 'historical_economy.csv', 'Year', 'Debt_GDP', 'Debt % GDP', '#8e44ad', 'line');
     drawSimpleChart('chartGDP', 'historical_economy.csv', 'Year', 'GDP_Growth', 'GDP Growth %', '#2c3e50', 'bar'); 
     drawSimpleChart('chartUnemployment', 'historical_economy.csv', 'Year', 'Unemployment', 'Unemployment %', '#2980b9');
-
-    // 3. Migration
     drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
     drawMirrorChart('chartMigrationMirror', 'migration_extended.csv');
 
