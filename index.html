@@ -100,6 +100,10 @@
     <div class="section-title">Chapter 2: Migration & Borders</div>
     <div class="grid">
         <div class="card">
+            <h3>Total UK Population (Millions) <span class="badge hist">1900 – Present</span></h3>
+            <div class="chart-box"><canvas id="chartPopulation"></canvas></div>
+        </div>
+        <div class="card">
             <h3>Net Migration History <span class="badge manual">1975 – 2025</span></h3>
             <div class="chart-box"><canvas id="chartMigrationNet"></canvas></div>
         </div>
@@ -124,7 +128,7 @@
     };
 
     // --- 2. RENDER FUNCTION ---
-    function renderChart(elemId, dataArray, label, color, type, addContext = false, isCurrency = false) {
+    function renderChart(elemId, dataArray, label, color, type, addContext = false, isCurrency = false, isMillions = false) {
         const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
         
         new Chart(document.getElementById(elemId), {
@@ -144,28 +148,43 @@
                     x: isYearly ? { type: 'linear', min: parseInt(dataArray[0].date), max: parseInt(dataArray[dataArray.length - 1].date), ticks: { callback: v => String(v).replace(/,/g, '') } } : { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
                     y: { 
                         beginAtZero: false,
-                        ticks: { callback: function(value) { return isCurrency ? '£' + (value/1000) + 'k' : value; } }
+                        ticks: { 
+                            callback: function(value) { 
+                                if (isCurrency) return '£' + (value/1000) + 'k'; 
+                                if (isMillions) return value + 'm'; 
+                                return value; 
+                            } 
+                        }
                     } 
                 },
                 plugins: { 
                     legend: { display: false },
-                    tooltip: { callbacks: { title: ctx => String(ctx[0].parsed.x).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() } },
+                    tooltip: { callbacks: { title: ctx => String(ctx[0].parsed.x).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isMillions ? 'm' : '') } },
                     annotation: addContext ? historicalContext : {}
                 }
             }
         });
     }
 
-    // --- 3. EXECUTE ECONOMY ---
+    // --- 3. EXECUTE CHARTS ---
     Papa.parse('data/cpi_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInflation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Inflation %', '#e74c3c', 'line', true); } });
     Papa.parse('data/national_debt_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebt', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) })), 'Debt % GDP', '#8e44ad', 'line', true); } });
     Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDP', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) })), 'GDP Growth %', '#2c3e50', 'line', true); } });
     Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
     Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
-    // NEW: GDP PER CAPITA
     Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
 
-    // --- 4. EXECUTE MIGRATION ---
+    // NEW POPULATION CHART (Teal color, Millions Flag=true)
+    Papa.parse('data/population_long.csv', { 
+        download: true, header: true, skipEmptyLines: true, 
+        complete: function(results) { 
+            renderChart('chartPopulation', 
+                results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 
+                'Total Population', '#16a085', 'line', true, false, true); // true for Context, false for Currency, true for Millions
+        } 
+    });
+
+    // MIGRATION EXISTING
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -192,4 +211,4 @@
 
 </script>
 </body>
-</html>
+</html>S
