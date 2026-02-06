@@ -83,13 +83,13 @@ Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmp
 Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
 Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
 
-// Function for the 3-Line Tax Chart (STACKED AREA)
+// Function for Tax Revenue Sources (Stacked % of GDP)
 function drawTaxComposition(elemId) {
-    Papa.parse('data/tax_rates_combined.csv', {
+    Papa.parse('data/tax_revenue_sources.csv', {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year);
-            const fmt = (val) => val ? parseFloat(val) : null;
+            const fmt = (val) => val ? parseFloat(val) : 0;
 
             new Chart(document.getElementById(elemId), {
                 type: 'line',
@@ -98,20 +98,22 @@ function drawTaxComposition(elemId) {
                         { 
                             label: 'Income Tax', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), 
-                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 1, pointRadius: 0, 
-                            fill: true // STACKED
+                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 0, pointRadius: 0, fill: true 
                         },
                         { 
                             label: 'National Insurance', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), 
-                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 1, pointRadius: 0, 
-                            fill: true // STACKED
+                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 0, pointRadius: 0, fill: true 
                         },
                         { 
                             label: 'VAT', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), 
-                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 1, pointRadius: 0, 
-                            fill: true // STACKED
+                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 0, pointRadius: 0, fill: true 
+                        },
+                        { 
+                            label: 'Other (Corp/Excise/Duty)', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Other)})), 
+                            borderColor: '#95a5a6', backgroundColor: '#95a5a6', borderWidth: 0, pointRadius: 0, fill: true 
                         }
                     ]
                 },
@@ -121,20 +123,29 @@ function drawTaxComposition(elemId) {
                     scales: { 
                         x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
                         y: { 
-                            stacked: true, // <--- ENABLES STACKING
+                            stacked: true, 
                             beginAtZero: true, 
-                            title: { display: true, text: 'Combined Rate %' } 
+                            title: { display: true, text: '% of GDP' } 
                         }
                     },
                     plugins: { 
                         legend: { display: true, position: 'bottom' },
-                        annotation: historicalContext
+                        annotation: historicalContext,
+                        tooltip: {
+                            callbacks: {
+                                footer: (items) => {
+                                    const total = items.reduce((a, b) => a + b.parsed.y, 0);
+                                    return 'Total Tax Revenue: ' + total.toFixed(1) + '% of GDP';
+                                }
+                            }
+                        }
                     }
                 }
             });
         }
     });
 }
+
 
 Papa.parse('data/tax_reality.csv', { 
     download: true, header: true, skipEmptyLines: true, 
