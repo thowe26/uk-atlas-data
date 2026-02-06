@@ -82,14 +82,13 @@ Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, ski
 Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
 Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
 Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
-// Function for the 3-Line Tax Chart
+
+// Function for the 3-Line Tax Chart (STACKED AREA)
 function drawTaxComposition(elemId) {
     Papa.parse('data/tax_rates_combined.csv', {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year);
-            
-            // Helper to format data for Linear Scale
             const fmt = (val) => val ? parseFloat(val) : null;
 
             new Chart(document.getElementById(elemId), {
@@ -99,17 +98,20 @@ function drawTaxComposition(elemId) {
                         { 
                             label: 'Income Tax', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), 
-                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 3, pointRadius: 0, tension: 0.1 
-                        },
-                        { 
-                            label: 'VAT', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), 
-                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 2, pointRadius: 0, borderDash: [5, 5], tension: 0.1 
+                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 1, pointRadius: 0, 
+                            fill: true // STACKED
                         },
                         { 
                             label: 'National Insurance', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), 
-                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 2, pointRadius: 0, borderDash: [2, 2], tension: 0.1 
+                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 1, pointRadius: 0, 
+                            fill: true // STACKED
+                        },
+                        { 
+                            label: 'VAT', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), 
+                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 1, pointRadius: 0, 
+                            fill: true // STACKED
                         }
                     ]
                 },
@@ -117,19 +119,16 @@ function drawTaxComposition(elemId) {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     scales: { 
-                        x: { 
-                            type: 'linear', // <--- THE KEY FIX
-                            min: 1900, 
-                            max: 2025, 
-                            ticks: { 
-                                callback: v => String(v).replace(/,/g, '') 
-                            } 
-                        },
-                        y: { beginAtZero: true, title: { display: true, text: 'Rate %' } }
+                        x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
+                        y: { 
+                            stacked: true, // <--- ENABLES STACKING
+                            beginAtZero: true, 
+                            title: { display: true, text: 'Combined Rate %' } 
+                        }
                     },
                     plugins: { 
                         legend: { display: true, position: 'bottom' },
-                        annotation: historicalContext // Now this will work!
+                        annotation: historicalContext
                     }
                 }
             });
@@ -139,9 +138,6 @@ function drawTaxComposition(elemId) {
 
 // EXECUTE IT
 drawTaxComposition('chartTaxRate');
-
-
-
 
 // Chapter 4: Population
 Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
