@@ -1,4 +1,7 @@
-// --- 1. HISTORICAL CONTEXT DEFINITIONS ---
+// ==========================================
+// 1. CONFIGURATION & CONTEXT
+// ==========================================
+
 const historicalContext = {
     annotations: {
         ww1: { 
@@ -28,111 +31,172 @@ const historicalContext = {
     }
 };
 
-// --- 2. UNIVERSAL RENDER FUNCTION (SMART AXIS: £ and %) ---
-function renderChart(elemId, dataArray, label, color, type, addContext = false, isCurrency = false, isMillions = false) {
-    const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
-    
-    // Auto-detect if this is a percentage chart based on the label name
-    const isPercentage = label.includes('%') || label.includes('Rate') || label.includes('Growth');
+// ==========================================
+// 2. UNIVERSAL RENDERER
+// ==========================================
+
+function renderChart(elemId, data, column, label, color, type = 'line', isCurrency = false, isMillions = false) {
+    // 1. Filter data: only rows where this specific column has a value
+    const cleanData = data.filter(r => r[column] && r[column] !== "");
+
+    // 2. Auto-detect Percentage
+    const isPercentage = label.includes('%') || label.includes('Rate') || label.includes('Growth') || label.includes('Ratio');
 
     new Chart(document.getElementById(elemId), {
         type: type,
         data: {
-            labels: isYearly ? undefined : dataArray.map(d => d.date),
+            labels: cleanData.map(d => d.Year),
             datasets: [{
                 label: label,
-                data: isYearly ? dataArray.map(d => ({x: parseInt(d.date), y: d.value})) : dataArray.map(d => d.value),
-                borderColor: color, backgroundColor: color + '20', borderWidth: 2, pointRadius: 0, hoverRadius: 4, fill: true, tension: 0.2
+                data: cleanData.map(d => parseFloat(d[column])),
+                borderColor: color,
+                backgroundColor: color + '20', // Add transparency
+                borderWidth: 2,
+                pointRadius: 0,
+                hoverRadius: 4,
+                fill: true,
+                tension: 0.2
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
-            scales: { 
-                x: isYearly ? { type: 'linear', min: parseInt(dataArray[0].date), max: parseInt(dataArray[dataArray.length - 1].date), ticks: { callback: v => String(v).replace(/,/g, '') } } : { grid: { display: false }, ticks: { maxTicksLimit: 6 } },
-                y: { 
+            scales: {
+                x: { 
+                    type: 'linear', 
+                    min: parseInt(cleanData[0].Year), 
+                    max: parseInt(cleanData[cleanData.length-1].Year), 
+                    ticks: { callback: v => String(v).replace(/,/g, '') } 
+                },
+                y: {
                     beginAtZero: false,
-                    ticks: { 
-                        callback: function(value) { 
+                    ticks: {
+                        callback: function(value) {
                             if (isCurrency) {
-                                if (value >= 1000) return '£' + (value/1000) + 'k'; 
-                                return '£' + value; 
+                                if (value >= 1000) return '£' + (value/1000) + 'k';
+                                return '£' + value;
                             }
-                            if (isPercentage) return value + '%'; // <--- NEW: Adds % symbol
-                            if (isMillions) return value + 'm'; 
-                            return value; 
-                        } 
+                            if (isPercentage) return value + '%';
+                            if (isMillions) return value + 'm';
+                            return value;
+                        }
                     }
-                } 
+                }
             },
-            plugins: { 
+            plugins: {
                 legend: { display: false },
-                tooltip: { callbacks: { title: ctx => String(ctx[0].parsed.x).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isMillions ? 'm' : '') + (isPercentage ? '%' : '') } },
-                annotation: addContext ? historicalContext : {}
+                tooltip: { 
+                    callbacks: { 
+                        title: ctx => ctx[0].label,
+                        label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isPercentage ? '%' : '') + (isMillions ? 'm' : '') 
+                    } 
+                },
+                annotation: historicalContext
             }
         }
     });
 }
 
-// --- 3. DATA LOADING & EXECUTION ---
+// Special Function: Stacked Area Charts (For Taxes, Sectors, etc.)
+function renderStacked(elemId, data, columns, colors, labels, yTitle) {
+    // Filter to rows that have data for the first column
+    const cleanData = data.filter(r => r[columns[0]]);
 
-// Chapter 1: Macro Economy
-Papa.parse('data/cpi_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInflation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Inflation %', '#e74c3c', 'line', true); } });
-Papa.parse('data/national_debt_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebt', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) })), 'Debt % GDP', '#8e44ad', 'line', true); } });
-Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDP', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) })), 'GDP Growth %', '#2c3e50', 'line', true); } });
-Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
-Papa.parse('data/interest_rates_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInterest', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Interest Rate %', '#e67e22', 'line', true); } });
-
-// Function for Tax Revenue Sources (Stacked % of GDP)
-function drawTaxComposition(elemId) {
-    Papa.parse('data/tax_revenue_detailed.csv', { 
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(results) {
-            const data = results.data.filter(r => r.Year);
-            const fmt = (val) => val ? parseFloat(val) : 0;
-
-            new Chart(document.getElementById(elemId), {
-                type: 'line',
-                data: {
-                    datasets: [
-                        { label: 'Income Tax', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 0, pointRadius: 0, fill: true },
-                        { label: 'National Insurance', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 0, pointRadius: 0, fill: true },
-                        { label: 'VAT', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 0, pointRadius: 0, fill: true },
-                        { label: 'Corporation Tax', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Corp)})), borderColor: '#e67e22', backgroundColor: '#e67e22', borderWidth: 0, pointRadius: 0, fill: true },
-                        { label: 'Other (Council/Fuel/Stamp)', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Other)})), borderColor: '#95a5a6', backgroundColor: '#95a5a6', borderWidth: 0, pointRadius: 0, fill: true }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: { 
-                        x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
-                        y: { stacked: true, beginAtZero: true, title: { display: true, text: '% of GDP' } }
-                    },
-                    plugins: { 
-                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
-                        annotation: historicalContext,
-                        tooltip: { callbacks: { footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total Tax Revenue: ' + total.toFixed(1) + '% of GDP'; } } }
-                    }
-                }
-            });
+    new Chart(document.getElementById(elemId), {
+        type: 'line',
+        data: {
+            labels: cleanData.map(d => d.Year),
+            datasets: columns.map((col, i) => ({
+                label: labels[i],
+                data: cleanData.map(d => parseFloat(d[col] || 0)), // Handle blanks as 0
+                borderColor: colors[i],
+                backgroundColor: colors[i],
+                borderWidth: 0,
+                pointRadius: 0,
+                fill: true
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { type: 'linear', min: 1900, max: 2024, ticks: { callback: v => String(v).replace(/,/g, '') } },
+                y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle } }
+            },
+            plugins: {
+                legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
+                annotation: historicalContext,
+                tooltip: { callbacks: { footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } } }
+            }
         }
     });
 }
-drawTaxComposition('chartTaxRate');
 
-// Chapter 2: The Individual
-Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
-Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
-Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
-Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
-Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
-Papa.parse('data/real_wages.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartRealWages', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true, true); } });
+// ==========================================
+// 3. MASTER EXECUTION (FROM GOOGLE SHEETS)
+// ==========================================
 
-// Chapter 4: Population
-Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
+// Your Published Google Sheet URL
+const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX_OSl_z-Fnou-iUO0KI-lnION2I1NzYhWS_URwjfF_U6jA4ccqAm1mFTpZjf6wKD0bX9dhD3OAmyi/pub?gid=0&single=true&output=csv';
 
-// Chapter 5: Migration (Functions & Execution)
+Papa.parse(sheetURL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+        const data = results.data;
+
+        // --- CHAPTER 1: MACRO ---
+        renderChart('chartInflation', data, 'CPI', 'Inflation %', '#e74c3c');
+        renderChart('chartDebt', data, 'Debt_GDP', 'Debt % GDP', '#8e44ad');
+        renderChart('chartGDP', data, 'GDP_Growth', 'GDP Growth %', '#2c3e50');
+        renderChart('chartUnemployment', data, 'Unemployment', 'Unemployment Rate', '#2980b9');
+        renderChart('chartInterest', data, 'Interest_Rate', 'Interest Rate', '#e67e22');
+        
+        // Tax Revenue Stack
+        renderStacked(
+            'chartTaxRate', 
+            data, 
+            ['Tax_Rev_Income', 'Tax_Rev_NI', 'Tax_Rev_VAT', 'Tax_Rev_Corp', 'Tax_Rev_Other'],
+            ['#27ae60', '#2980b9', '#c0392b', '#e67e22', '#95a5a6'],
+            ['Income Tax', 'National Insurance', 'VAT', 'Corporation Tax', 'Other'],
+            '% of GDP'
+        );
+
+        // --- CHAPTER 2: INDIVIDUAL ---
+        renderChart('chartDebtCapita', data, 'Debt_Per_Capita', 'Real Debt', '#d35400', 'line', true);
+        renderChart('chartGDPCapita', data, 'GDP_Per_Capita_Growth', 'Growth Per Person %', '#27ae60');
+        renderChart('chartRealWages', data, 'Real_Wages', 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true);
+        renderChart('chartHousePrices', data, 'House_Price', 'Avg Price (2024 £)', '#9b59b6', 'line', true);
+        renderChart('chartHouseRatio', data, 'House_Ratio', 'Price to Earnings Ratio', '#2c3e50');
+        renderChart('chartTaxCapita', data, 'Tax_Per_Capita', 'Tax Per Person', '#8e44ad', 'line', true);
+
+        // --- CHAPTER 3: INDUSTRY ---
+        renderStacked(
+            'chartSectors',
+            data,
+            ['Sector_Services', 'Sector_Industry', 'Sector_Agri'],
+            ['#f1c40f', '#34495e', '#27ae60'],
+            ['Services', 'Industry', 'Agriculture'],
+            '% of Economy'
+        );
+
+        renderStacked(
+            'chartWorkforce',
+            data,
+            ['Work_Public', 'Work_Services', 'Work_Industry', 'Work_Agri'],
+            ['#3498db', '#f1c40f', '#7f8c8d', '#27ae60'],
+            ['Public Sector', 'Services', 'Industry', 'Agriculture'],
+            '% of Workforce'
+        );
+
+        // --- CHAPTER 4: POPULATION ---
+        renderChart('chartPopulation', data, 'Population', 'Total Population', '#16a085', 'line', false, true);
+
+    }
+});
+
+// NOTE: Migration charts still use separate files because their structure is unique.
 function drawManualBar(elemId, file, colLabel, colValue) {
     Papa.parse(`data/${file}`, {
         download: true, header: true, skipEmptyLines: true,
@@ -142,7 +206,6 @@ function drawManualBar(elemId, file, colLabel, colValue) {
         }
     });
 }
-
 function drawMirrorChart(elemId, file) {
      Papa.parse(`data/${file}`, {
         download: true, header: true, skipEmptyLines: true,
@@ -153,6 +216,5 @@ function drawMirrorChart(elemId, file) {
         }
     });
 }
-
 drawManualBar('chartMigrationNet', 'net_migration_long_term.csv', 'Year', 'Net_Migration');
 drawMirrorChart('chartMigrationMirror', 'migration_extended.csv');
