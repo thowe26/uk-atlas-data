@@ -76,7 +76,7 @@ Papa.parse('data/interest_rates_long.csv', { download: true, header: true, skipE
 Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
 Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
 Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
-
+Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
 
 // Chapter 4: Population
 Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
