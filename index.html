@@ -21,41 +21,38 @@
         
         .container { max-width: 800px; margin: 0 auto; } 
         
-        /* NEW MAIN HEADER */
+        /* HEADER */
         header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
         h1 { margin: 0; font-size: 1.8rem; color: var(--primary); letter-spacing: -1px; }
-        .subtitle { color: #7f8c8d; margin-top: 5px; font-size: 1rem; font-weight: 600; }
+        .subtitle { color: #7f8c8d; margin-top: 5px; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* COLLAPSIBLE CHAPTER STYLING */
-        details { margin-bottom: 20px; }
+        /* CHAPTERS */
+        details { margin-bottom: 15px; }
         
         summary {
             cursor: pointer;
-            font-size: 1.3rem; 
+            font-size: 1.2rem; 
+            font-weight: 600;
             color: var(--primary); 
-            margin: 20px 0 15px 0;
-            padding: 10px 0 10px 10px;
+            margin: 0;
+            padding: 15px;
             border-left: 5px solid #3498db; 
-            list-style: none; /* Hides default triangle in some browsers */
-            background: rgba(52, 152, 219, 0.05);
-            border-radius: 0 8px 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            list-style: none;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.2s;
         }
+        
+        summary:hover { background: #f8f9fa; }
         
         /* Custom Arrow */
-        summary::after {
-            content: '+'; 
-            font-size: 1.5rem; 
-            margin-right: 15px; 
-            font-weight: bold;
-        }
+        summary::after { content: '+'; font-size: 1.5rem; font-weight: bold; color: #bdc3c7; }
+        details[open] summary::after { content: '-'; color: #3498db; }
         
-        details[open] summary::after { content: '-'; }
-
-        /* THE GRID */
-        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; }
+        /* GRID & CARDS */
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; padding: 0 5px; }
         
         .card { 
             background: var(--card-bg); 
@@ -69,8 +66,10 @@
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 10px;
         }
+
+        .placeholder-text { text-align: center; padding: 20px; color: #95a5a6; font-style: italic; }
         
-        /* Mobile Chart Height */
+        /* MOBILE OPTIMIZATION */
         .chart-box { position: relative; height: 200px; width: 100%; }
         
         footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75rem; }
@@ -89,11 +88,11 @@
 <div class="container">
     <header>
         <h1>The UK Data Atlas</h1>
-        <div class="subtitle">1900 – Present</div>
+        <div class="subtitle">100 Years in 100 Graphs</div>
     </header>
 
     <details open>
-        <summary>Chapter 1: The Economy</summary>
+        <summary>1. The Macro Economy (The Nation's Wallet)</summary>
         <div class="grid">
             <div class="card">
                 <h3>Inflation (CPI)</h3>
@@ -111,6 +110,12 @@
                 <h3>Unemployment Rate</h3>
                 <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
             </div>
+        </div>
+    </details>
+
+    <details open>
+        <summary>2. The Individual & Family (Your Wallet)</summary>
+        <div class="grid">
             <div class="card">
                 <h3>Real Debt Per Person (Inflation adjusted)</h3>
                 <div class="chart-box"><canvas id="chartDebtCapita"></canvas></div>
@@ -122,13 +127,26 @@
         </div>
     </details>
 
+    <details>
+        <summary>3. Industry & Work (How We Earn)</summary>
+        <div class="grid">
+            <div class="card"><div class="placeholder-text">Coming Soon: Manufacturing vs Services</div></div>
+        </div>
+    </details>
+
     <details open>
-        <summary>Chapter 2: Population & Borders</summary>
+        <summary>4. Population & Demographics (Who We Are)</summary>
         <div class="grid">
             <div class="card">
                 <h3>Total UK Population (Millions)</h3>
                 <div class="chart-box"><canvas id="chartPopulation"></canvas></div>
             </div>
+        </div>
+    </details>
+
+    <details open>
+        <summary>5. Migration & Borders (Movement)</summary>
+        <div class="grid">
             <div class="card">
                 <h3>Net Migration History</h3>
                 <div class="chart-box"><canvas id="chartMigrationNet"></canvas></div>
@@ -140,27 +158,45 @@
         </div>
     </details>
 
+    <details>
+        <summary>6. Society & Institutions (The State of the Nation)</summary>
+        <div class="grid">
+            <div class="card"><div class="placeholder-text">Coming Soon: NHS, Crime & Prisons</div></div>
+        </div>
+    </details>
+
+    <details>
+        <summary>7. Global Context (The G7 Race)</summary>
+        <div class="grid">
+            <div class="card"><div class="placeholder-text">Coming Soon: UK vs G7 Comparisons</div></div>
+        </div>
+    </details>
+
     <footer>Data Sourced from Bank of England "Millennium of Data" & ONS Historical Series.</footer>
 </div>
 
 <script>
-    // --- 1. REFINED CONTEXT LAYER ---
+    // --- 1. REFINED CONTEXT LAYER (With Centering Fix) ---
     const historicalContext = {
         annotations: {
             ww1: { 
                 type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
                 label: { 
-                    content: ['WW1'], // Two Lines
-                    display: true, position: { x: 'center', y: 'start' }, 
-                    yAdjust: 0, // Pinned to top
-                    color: '#555', font: { size: 10, weight: 'normal' } // Unbolded
+                    content: ['World War', '1'], 
+                    display: true, 
+                    position: { x: 'center', y: 'start' }, 
+                    textAlign: 'center', // <--- FIX: Ensures multi-line text aligns center
+                    yAdjust: 0, 
+                    color: '#555', font: { size: 10, weight: 'normal' } 
                 } 
             },
             ww2: { 
                 type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
                 label: { 
-                    content: ['WW2'], 
-                    display: true, position: { x: 'center', y: 'start' }, 
+                    content: ['World War', '2'], 
+                    display: true, 
+                    position: { x: 'center', y: 'start' }, 
+                    textAlign: 'center', 
                     yAdjust: 0, 
                     color: '#555', font: { size: 10, weight: 'normal' } 
                 } 
@@ -169,17 +205,20 @@
                 type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
                 label: { 
                     content: ['Energy', 'Crisis'], 
-                    display: true, position: { x: 'center', y: 'start' }, 
+                    display: true, 
+                    position: { x: 'center', y: 'start' }, 
+                    textAlign: 'center', 
                     yAdjust: 0, 
                     color: '#555', font: { size: 10, weight: 'normal' } 
                 } 
             },
-            // NEW: FINANCIAL CRISIS
             finance: { 
                 type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
                 label: { 
                     content: ['Financial', 'Crisis'], 
-                    display: true, position: { x: 'center', y: 'start' }, 
+                    display: true, 
+                    position: { x: 'center', y: 'start' }, 
+                    textAlign: 'center', // <--- FIX
                     yAdjust: 0, 
                     color: '#555', font: { size: 10, weight: 'normal' } 
                 } 
@@ -188,7 +227,9 @@
                 type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(231, 76, 60, 0.2)', borderWidth: 0, 
                 label: { 
                     content: 'Covid', 
-                    display: true, position: { x: 'center', y: 'start' }, 
+                    display: true, 
+                    position: { x: 'center', y: 'start' }, 
+                    textAlign: 'center', 
                     yAdjust: 0, 
                     color: '#c0392b', font: { size: 10, weight: 'normal' } 
                 } 
@@ -235,17 +276,22 @@
         });
     }
 
-    // --- 3. EXECUTE ECONOMY ---
+    // --- 3. EXECUTE CHARTS ---
+    
+    // Chapter 1: Macro
     Papa.parse('data/cpi_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInflation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Inflation %', '#e74c3c', 'line', true); } });
     Papa.parse('data/national_debt_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebt', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) })), 'Debt % GDP', '#8e44ad', 'line', true); } });
     Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDP', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) })), 'GDP Growth %', '#2c3e50', 'line', true); } });
     Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
+
+    // Chapter 2: Individual
     Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
     Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
 
-    // --- 4. EXECUTE MIGRATION ---
+    // Chapter 4: Population
     Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
-    
+
+    // Chapter 5: Migration
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
