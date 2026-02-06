@@ -1,0 +1,72 @@
+:root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
+
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: var(--bg); 
+    color: #333; 
+    margin: 0; 
+    padding: 10px; 
+}
+
+.container { max-width: 800px; margin: 0 auto; } 
+
+/* HEADER */
+header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
+h1 { margin: 0; font-size: 1.8rem; color: var(--primary); letter-spacing: -1px; }
+.subtitle { color: #7f8c8d; margin-top: 5px; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+/* CHAPTERS */
+details { margin-bottom: 15px; }
+
+summary {
+    cursor: pointer;
+    font-size: 1.2rem; 
+    font-weight: 600;
+    color: var(--primary); 
+    margin: 0;
+    padding: 15px;
+    border-left: 5px solid #3498db; 
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.2s;
+}
+
+summary:hover { background: #f8f9fa; }
+
+/* Custom Arrow */
+summary::after { content: '+'; font-size: 1.5rem; font-weight: bold; color: #bdc3c7; }
+details[open] summary::after { content: '-'; color: #3498db; }
+
+/* GRID & CARDS */
+.grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; padding: 0 5px; }
+
+.card { 
+    background: var(--card-bg); 
+    padding: 12px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+}
+
+h3 { 
+    margin-top: 0; color: #34495e; font-size: 1rem; 
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 10px;
+}
+
+.placeholder-text { text-align: center; padding: 20px; color: #95a5a6; font-style: italic; }
+
+/* MOBILE OPTIMIZATION */
+.chart-box { position: relative; height: 200px; width: 100%; }
+
+footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75rem; }
+
+@media (min-width: 600px) {
+    body { padding: 30px; }
+    h1 { font-size: 2.5rem; }
+    .card { padding: 25px; }
+    .chart-box { height: 350px; }
+    h3 { font-size: 1.1rem; margin-bottom: 15px; }
+}
