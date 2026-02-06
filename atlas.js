@@ -3,23 +3,27 @@ const historicalContext = {
     annotations: {
         ww1: { 
             type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['World War', '1'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+            label: { content: ['WW1'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         },
         ww2: { 
             type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['World War', '2'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+            label: { content: ['WW2'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         },
         energy: { 
             type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
             label: { content: ['Energy', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        recession90: { 
+            type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['90s', 'Recession'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         },
         finance: { 
             type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
             label: { content: ['Financial', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         },
         covid: { 
-            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(231, 76, 60, 0.2)', borderWidth: 0, 
-            label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#c0392b', font: { size: 10, weight: 'normal' } } 
+            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2))', borderWidth: 0, 
+            label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         }
     }
 };
