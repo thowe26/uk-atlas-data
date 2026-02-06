@@ -87,7 +87,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
                 legend: { display: false },
                 tooltip: { 
                     callbacks: { 
-                        title: ctx => ctx[0].label,
+                        title: ctx => String(ctx[0].label).replace(/,/g, ''), // <--- FIX HERE
                         label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isPercentage ? '%' : '') + (isMillions ? 'm' : '') 
                     } 
                 },
@@ -126,7 +126,12 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                 annotation: historicalContext,
-                tooltip: { callbacks: { footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } } }
+                tooltip: { 
+                    callbacks: { 
+                        title: ctx => String(ctx[0].label).replace(/,/g, ''), // <--- FIX HERE
+                        footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } 
+                    } 
+                }
             }
         }
     });
