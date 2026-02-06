@@ -16,48 +16,56 @@
             background-color: var(--bg); 
             color: #333; 
             margin: 0; 
-            padding: 15px;
+            padding: 10px; /* Reduced padding for mobile */
         }
         
         .container { max-width: 800px; margin: 0 auto; } 
         
-        header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
-        h1 { margin: 0; font-size: 2rem; color: var(--primary); letter-spacing: -1px; }
-        .subtitle { color: #7f8c8d; margin-top: 5px; font-size: 1rem; }
+        header { text-align: center; margin-bottom: 20px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
+        h1 { margin: 0; font-size: 1.8rem; color: var(--primary); letter-spacing: -1px; }
+        .subtitle { color: #7f8c8d; margin-top: 5px; font-size: 0.9rem; }
         
         .section-title { 
-            font-size: 1.5rem; color: var(--primary); margin: 40px 0 20px 0; 
-            border-left: 5px solid #3498db; padding-left: 15px; 
+            font-size: 1.3rem; color: var(--primary); margin: 30px 0 15px 0; 
+            border-left: 5px solid #3498db; padding-left: 10px; 
         }
 
-        .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
         
         .card { 
             background: var(--card-bg); 
-            padding: 15px; 
+            padding: 12px; /* Tighter padding */
             border-radius: 12px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
         }
         
         h3 { 
-            margin-top: 0; color: #34495e; font-size: 1.1rem; 
+            margin-top: 0; color: #34495e; font-size: 1rem; 
             display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; 
-            gap: 10px;
+            gap: 10px; margin-bottom: 10px;
         }
         
-        .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
+        .badge { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
         .hist { background: #2c3e50; color: #fff; } 
         .manual { background: #fff3cd; color: #f39c12; border: 1px solid #f39c12; }
 
-        .chart-box { position: relative; height: 300px; width: 100%; }
+        /* --- THE CRITICAL FIX FOR MOBILE --- */
+        .chart-box { 
+            position: relative; 
+            height: 200px; /* Shorter height for mobile to maintain 'landscape' ratio */
+            width: 100%; 
+        }
         
-        footer { text-align: center; margin-top: 50px; color: #95a5a6; font-size: 0.8rem; }
+        footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75rem; }
 
+        /* --- DESKTOP OVERRIDES --- */
         @media (min-width: 600px) {
             body { padding: 30px; }
             h1 { font-size: 2.5rem; }
             .card { padding: 25px; }
+            /* When on a big screen, let the chart grow tall again */
             .chart-box { height: 350px; }
+            h3 { font-size: 1.1rem; margin-bottom: 15px; }
         }
     </style>
 </head>
@@ -120,10 +128,10 @@
     // --- 1. CONTEXT LAYER ---
     const historicalContext = {
         annotations: {
-            ww1: { type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'World War 1', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 11 } } },
-            ww2: { type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'World War 2', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 11 } } },
-            energy: { type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'Energy Crisis', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 11 } } },
-            covid: { type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(231, 76, 60, 0.2)', borderWidth: 0, label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#c0392b', font: { weight: 'bold', size: 10 } } }
+            ww1: { type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'World War 1', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 10 } } },
+            ww2: { type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'World War 2', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 10 } } },
+            energy: { type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'Energy Crisis', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#333', font: { weight: 'bold', size: 10 } } },
+            covid: { type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(231, 76, 60, 0.2)', borderWidth: 0, label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, yAdjust: 5, color: '#c0392b', font: { weight: 'bold', size: 9 } } }
         }
     };
 
@@ -145,7 +153,7 @@
                 responsive: true, maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 scales: { 
-                    x: isYearly ? { type: 'linear', min: parseInt(dataArray[0].date), max: parseInt(dataArray[dataArray.length - 1].date), ticks: { callback: v => String(v).replace(/,/g, '') } } : { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                    x: isYearly ? { type: 'linear', min: parseInt(dataArray[0].date), max: parseInt(dataArray[dataArray.length - 1].date), ticks: { callback: v => String(v).replace(/,/g, '') } } : { grid: { display: false }, ticks: { maxTicksLimit: 6 } }, // Reduced ticks for mobile
                     y: { 
                         beginAtZero: false,
                         ticks: { 
@@ -166,7 +174,7 @@
         });
     }
 
-    // --- 3. EXECUTE CHARTS ---
+    // --- 3. EXECUTE ECONOMY ---
     Papa.parse('data/cpi_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInflation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Inflation %', '#e74c3c', 'line', true); } });
     Papa.parse('data/national_debt_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebt', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Debt_GDP) })), 'Debt % GDP', '#8e44ad', 'line', true); } });
     Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDP', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.GDP_Growth) })), 'GDP Growth %', '#2c3e50', 'line', true); } });
@@ -174,17 +182,9 @@
     Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
     Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
 
-    // NEW POPULATION CHART (Teal color, Millions Flag=true)
-    Papa.parse('data/population_long.csv', { 
-        download: true, header: true, skipEmptyLines: true, 
-        complete: function(results) { 
-            renderChart('chartPopulation', 
-                results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 
-                'Total Population', '#16a085', 'line', true, false, true); // true for Context, false for Currency, true for Millions
-        } 
-    });
+    // --- 4. EXECUTE MIGRATION ---
+    Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
 
-    // MIGRATION EXISTING
     function drawManualBar(elemId, file, colLabel, colValue) {
         Papa.parse(`data/${file}`, {
             download: true, header: true, skipEmptyLines: true,
@@ -211,4 +211,4 @@
 
 </script>
 </body>
-</html>S
+</html>
