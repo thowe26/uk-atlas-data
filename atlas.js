@@ -82,6 +82,44 @@ Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, ski
 Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
 Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
 Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
+// Function for the 3-Line Tax Chart
+function drawTaxComposition(elemId) {
+    Papa.parse('data/tax_rates_combined.csv', {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data.filter(r => r.Year);
+            new Chart(document.getElementById(elemId), {
+                type: 'line',
+                data: {
+                    labels: data.map(r => r.Year),
+                    datasets: [
+                        { label: 'Income Tax', data: data.map(r => r.Income), borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 3, pointRadius: 0, tension: 0.1 },
+                        { label: 'VAT', data: data.map(r => r.VAT), borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 2, pointRadius: 0, borderDash: [5, 5], tension: 0.1 },
+                        { label: 'National Insurance', data: data.map(r => r.NI), borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 2, pointRadius: 0, borderDash: [2, 2], tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Rate %' } }
+                    },
+                    plugins: { 
+                        legend: { display: true, position: 'bottom' },
+                        annotation: historicalContext // Keeps the War overlays
+                    }
+                }
+            });
+        }
+    });
+}
+
+// EXECUTE IT
+drawTaxComposition('chartTaxRate');
+
+
+
 
 // Chapter 4: Population
 Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
