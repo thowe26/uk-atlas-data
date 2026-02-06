@@ -84,9 +84,10 @@ Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmp
 Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
 Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
 
-// Function for Tax Revenue Sources (Stacked % of GDP)
+
+// Function for Tax Revenue Sources (Stacked % of GDP) - NOW WITH CORP TAX
 function drawTaxComposition(elemId) {
-    Papa.parse('data/tax_revenue_sources.csv', {
+    Papa.parse('data/tax_revenue_detailed.csv', { // <--- Pointing to new file
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year);
@@ -112,7 +113,12 @@ function drawTaxComposition(elemId) {
                             borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 0, pointRadius: 0, fill: true 
                         },
                         { 
-                            label: 'Other (Corp/Excise/Duty)', 
+                            label: 'Corporation Tax', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Corp)})), 
+                            borderColor: '#e67e22', backgroundColor: '#e67e22', borderWidth: 0, pointRadius: 0, fill: true 
+                        },
+                        { 
+                            label: 'Other (Council/Fuel/Stamp)', 
                             data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Other)})), 
                             borderColor: '#95a5a6', backgroundColor: '#95a5a6', borderWidth: 0, pointRadius: 0, fill: true 
                         }
@@ -130,7 +136,7 @@ function drawTaxComposition(elemId) {
                         }
                     },
                     plugins: { 
-                        legend: { display: true, position: 'bottom' },
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                         annotation: historicalContext,
                         tooltip: {
                             callbacks: {
