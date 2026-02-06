@@ -28,7 +28,7 @@ const historicalContext = {
     }
 };
 
-// --- 2. UNIVERSAL RENDER FUNCTION ---
+// --- 2. UNIVERSAL RENDER FUNCTION (UPDATED FOR £100s) ---
 function renderChart(elemId, dataArray, label, color, type, addContext = false, isCurrency = false, isMillions = false) {
     const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
     
@@ -51,7 +51,11 @@ function renderChart(elemId, dataArray, label, color, type, addContext = false, 
                     beginAtZero: false,
                     ticks: { 
                         callback: function(value) { 
-                            if (isCurrency) return '£' + (value/1000) + 'k'; 
+                            // INTELLIGENT CURRENCY FORMATTING
+                            if (isCurrency) {
+                                if (value >= 1000) return '£' + (value/1000) + 'k'; // £15k
+                                return '£' + value; // £600
+                            }
                             if (isMillions) return value + 'm'; 
                             return value; 
                         } 
@@ -76,18 +80,9 @@ Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmpty
 Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
 Papa.parse('data/interest_rates_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInterest', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Interest Rate %', '#e67e22', 'line', true); } });
 
-// Chapter 2: The Individual
-Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
-Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
-Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
-Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
-Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
-Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
-Papa.parse('data/real_wages.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartRealWages', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true, true); } });
-
-// Function for Tax Revenue Sources (Stacked % of GDP) - NOW WITH CORP TAX
+// Function for Tax Revenue Sources (Stacked % of GDP) - MOVED TO MACRO IN HTML, FUNCTION STAYS HERE
 function drawTaxComposition(elemId) {
-    Papa.parse('data/tax_revenue_detailed.csv', { // <--- Pointing to new file
+    Papa.parse('data/tax_revenue_detailed.csv', { 
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year);
@@ -152,47 +147,16 @@ function drawTaxComposition(elemId) {
         }
     });
 }
-
-
-Papa.parse('data/tax_reality.csv', { 
-    download: true, header: true, skipEmptyLines: true, 
-    complete: function(results) { 
-        const data = results.data.filter(r => r.Year);
-        new Chart(document.getElementById('chartTaxReality'), {
-            type: 'line',
-            data: {
-                labels: data.map(r => r.Year),
-                datasets: [
-                    { 
-                        label: 'Marginal "Stack" (Next £1)', 
-                        data: data.map(r => parseFloat(r.Marginal)), 
-                        borderColor: '#c0392b', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointRadius: 0
-                    },
-                    { 
-                        label: 'Effective Rate (Actual Bill)', 
-                        data: data.map(r => parseFloat(r.Effective)), 
-                        borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.2)', borderWidth: 3, pointRadius: 0, fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                scales: { 
-                    x: { type: 'linear', min: 1960, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
-                    y: { beginAtZero: true, max: 60, title: { display: true, text: 'Tax Rate %' } }
-                },
-                plugins: { 
-                    legend: { display: true, position: 'bottom' },
-                    annotation: historicalContext
-                }
-            }
-        }); 
-    } 
-});
-
-// EXECUTE IT
 drawTaxComposition('chartTaxRate');
+
+// Chapter 2: The Individual
+Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartDebtCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Real Debt', '#d35400', 'line', true, true); } });
+Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
+Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
+Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
+// Note: Tax Burden chart removed. Stacked chart moved to html chapter 1.
+Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
+Papa.parse('data/real_wages.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartRealWages', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true, true); } });
 
 // Chapter 4: Population
 Papa.parse('data/population_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartPopulation', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Population) })), 'Total Population', '#16a085', 'line', true, false, true); } });
