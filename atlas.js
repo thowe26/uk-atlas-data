@@ -136,6 +136,43 @@ function drawTaxComposition(elemId) {
     });
 }
 
+Papa.parse('data/tax_reality.csv', { 
+    download: true, header: true, skipEmptyLines: true, 
+    complete: function(results) { 
+        const data = results.data.filter(r => r.Year);
+        new Chart(document.getElementById('chartTaxReality'), {
+            type: 'line',
+            data: {
+                labels: data.map(r => r.Year),
+                datasets: [
+                    { 
+                        label: 'Marginal "Stack" (Next £1)', 
+                        data: data.map(r => parseFloat(r.Marginal)), 
+                        borderColor: '#c0392b', backgroundColor: 'transparent', borderWidth: 2, borderDash: [5, 5], pointRadius: 0
+                    },
+                    { 
+                        label: 'Effective Rate (Actual Bill)', 
+                        data: data.map(r => parseFloat(r.Effective)), 
+                        borderColor: '#2980b9', backgroundColor: 'rgba(52, 152, 219, 0.2)', borderWidth: 3, pointRadius: 0, fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: { 
+                    x: { type: 'linear', min: 1960, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
+                    y: { beginAtZero: true, max: 60, title: { display: true, text: 'Tax Rate %' } }
+                },
+                plugins: { 
+                    legend: { display: true, position: 'bottom' },
+                    annotation: historicalContext
+                }
+            }
+        }); 
+    } 
+});
+
 // EXECUTE IT
 drawTaxComposition('chartTaxRate');
 
