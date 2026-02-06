@@ -28,10 +28,13 @@ const historicalContext = {
     }
 };
 
-// --- 2. UNIVERSAL RENDER FUNCTION (UPDATED FOR £100s) ---
+// --- 2. UNIVERSAL RENDER FUNCTION (SMART AXIS: £ and %) ---
 function renderChart(elemId, dataArray, label, color, type, addContext = false, isCurrency = false, isMillions = false) {
     const isYearly = dataArray.length > 0 && dataArray.every(d => /^\d{4}$/.test(d.date));
     
+    // Auto-detect if this is a percentage chart based on the label name
+    const isPercentage = label.includes('%') || label.includes('Rate') || label.includes('Growth');
+
     new Chart(document.getElementById(elemId), {
         type: type,
         data: {
@@ -51,11 +54,11 @@ function renderChart(elemId, dataArray, label, color, type, addContext = false, 
                     beginAtZero: false,
                     ticks: { 
                         callback: function(value) { 
-                            // INTELLIGENT CURRENCY FORMATTING
                             if (isCurrency) {
-                                if (value >= 1000) return '£' + (value/1000) + 'k'; // £15k
-                                return '£' + value; // £600
+                                if (value >= 1000) return '£' + (value/1000) + 'k'; 
+                                return '£' + value; 
                             }
+                            if (isPercentage) return value + '%'; // <--- NEW: Adds % symbol
                             if (isMillions) return value + 'm'; 
                             return value; 
                         } 
@@ -64,7 +67,7 @@ function renderChart(elemId, dataArray, label, color, type, addContext = false, 
             },
             plugins: { 
                 legend: { display: false },
-                tooltip: { callbacks: { title: ctx => String(ctx[0].parsed.x).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isMillions ? 'm' : '') } },
+                tooltip: { callbacks: { title: ctx => String(ctx[0].parsed.x).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isMillions ? 'm' : '') + (isPercentage ? '%' : '') } },
                 annotation: addContext ? historicalContext : {}
             }
         }
@@ -80,7 +83,7 @@ Papa.parse('data/gdp_growth_long.csv', { download: true, header: true, skipEmpty
 Papa.parse('data/unemployment_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartUnemployment', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Unemployment) })), 'Unemployment %', '#2980b9', 'line', true); } });
 Papa.parse('data/interest_rates_long.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartInterest', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Interest Rate %', '#e67e22', 'line', true); } });
 
-// Function for Tax Revenue Sources (Stacked % of GDP) - MOVED TO MACRO IN HTML, FUNCTION STAYS HERE
+// Function for Tax Revenue Sources (Stacked % of GDP)
 function drawTaxComposition(elemId) {
     Papa.parse('data/tax_revenue_detailed.csv', { 
         download: true, header: true, skipEmptyLines: true,
@@ -92,31 +95,11 @@ function drawTaxComposition(elemId) {
                 type: 'line',
                 data: {
                     datasets: [
-                        { 
-                            label: 'Income Tax', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), 
-                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 0, pointRadius: 0, fill: true 
-                        },
-                        { 
-                            label: 'National Insurance', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), 
-                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 0, pointRadius: 0, fill: true 
-                        },
-                        { 
-                            label: 'VAT', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), 
-                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 0, pointRadius: 0, fill: true 
-                        },
-                        { 
-                            label: 'Corporation Tax', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Corp)})), 
-                            borderColor: '#e67e22', backgroundColor: '#e67e22', borderWidth: 0, pointRadius: 0, fill: true 
-                        },
-                        { 
-                            label: 'Other (Council/Fuel/Stamp)', 
-                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Other)})), 
-                            borderColor: '#95a5a6', backgroundColor: '#95a5a6', borderWidth: 0, pointRadius: 0, fill: true 
-                        }
+                        { label: 'Income Tax', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 0, pointRadius: 0, fill: true },
+                        { label: 'National Insurance', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 0, pointRadius: 0, fill: true },
+                        { label: 'VAT', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 0, pointRadius: 0, fill: true },
+                        { label: 'Corporation Tax', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Corp)})), borderColor: '#e67e22', backgroundColor: '#e67e22', borderWidth: 0, pointRadius: 0, fill: true },
+                        { label: 'Other (Council/Fuel/Stamp)', data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Other)})), borderColor: '#95a5a6', backgroundColor: '#95a5a6', borderWidth: 0, pointRadius: 0, fill: true }
                     ]
                 },
                 options: {
@@ -124,23 +107,12 @@ function drawTaxComposition(elemId) {
                     interaction: { mode: 'index', intersect: false },
                     scales: { 
                         x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
-                        y: { 
-                            stacked: true, 
-                            beginAtZero: true, 
-                            title: { display: true, text: '% of GDP' } 
-                        }
+                        y: { stacked: true, beginAtZero: true, title: { display: true, text: '% of GDP' } }
                     },
                     plugins: { 
                         legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                         annotation: historicalContext,
-                        tooltip: {
-                            callbacks: {
-                                footer: (items) => {
-                                    const total = items.reduce((a, b) => a + b.parsed.y, 0);
-                                    return 'Total Tax Revenue: ' + total.toFixed(1) + '% of GDP';
-                                }
-                            }
-                        }
+                        tooltip: { callbacks: { footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total Tax Revenue: ' + total.toFixed(1) + '% of GDP'; } } }
                     }
                 }
             });
@@ -154,7 +126,6 @@ Papa.parse('data/debt_per_capita.csv', { download: true, header: true, skipEmpty
 Papa.parse('data/gdp_per_capita_growth.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartGDPCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Growth Per Head %', '#27ae60', 'line', true); } });
 Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHousePrices', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Avg Price (2024 £)', '#9b59b6', 'line', true, true); } });
 Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
-// Note: Tax Burden chart removed. Stacked chart moved to html chapter 1.
 Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
 Papa.parse('data/real_wages.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartRealWages', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true, true); } });
 
