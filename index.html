@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The UK Data Atlas</title>
-    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='white'/><polyline points='10,90 30,70 50,80 70,30 90,40' fill='none' stroke='%233498db' stroke-width='10' stroke-linecap='round'/></svg>">
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-    
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .ghost { 
+            display: flex; align-items: center; justify-content: center; 
+            border: 2px dashed #bdc3c7; border-radius: 8px; 
+            color: #bdc3c7; font-weight: bold; font-style: italic;
+            background: #fafafa;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,7 +27,7 @@
         <div class="subtitle">100 Years in 100 Graphs</div>
     </header>
 
-    <details open>
+    <details>
         <summary>1. The Macro Economy (The Nation's Wallet)</summary>
         <div class="grid">
             <div class="card">
@@ -40,10 +46,14 @@
                 <h3>Unemployment Rate</h3>
                 <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
             </div>
+            <div class="card">
+                <h3>Interest Rates (The 5% vs 15% Era)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
-    <details open>
+    <details>
         <summary>2. The Individual & Family (Your Wallet)</summary>
         <div class="grid">
             <div class="card">
@@ -54,27 +64,66 @@
                 <h3>GDP Growth Per Capita ("Living Standards")</h3>
                 <div class="chart-box"><canvas id="chartGDPCapita"></canvas></div>
             </div>
+            <div class="card">
+                <h3>Real House Prices (1950-Present)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Housing Affordability (Price vs Salary)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>The Tax Burden (% of Income)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Real Wages (Purchasing Power)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
     <details>
         <summary>3. Industry & Work (How We Earn)</summary>
         <div class="grid">
-            <div class="card"><div class="placeholder-text">Coming Soon: Manufacturing vs Services</div></div>
+            <div class="card">
+                <h3>Manufacturing vs Services (% GDP)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Workforce: Factory vs Office vs Public</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Energy: Coal vs Renewables</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
-    <details open>
+    <details>
         <summary>4. Population & Demographics (Who We Are)</summary>
         <div class="grid">
             <div class="card">
                 <h3>Total UK Population (Millions)</h3>
                 <div class="chart-box"><canvas id="chartPopulation"></canvas></div>
             </div>
+            <div class="card">
+                <h3>Birth Rates (Boys vs Girls)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Life Expectancy (1900 vs 2024)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>The Ageing Crisis (Dependency Ratio)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
-    <details open>
+    <details>
         <summary>5. Migration & Borders (Movement)</summary>
         <div class="grid">
             <div class="card">
@@ -85,20 +134,58 @@
                 <h3>The "Mirror": Arrivals vs Departures</h3>
                 <div class="chart-box"><canvas id="chartMigrationMirror"></canvas></div>
             </div>
+            <div class="card">
+                <h3>Asylum as % of Net Migration</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Asylum Density (Per 1,000 People)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Visa Types: Work vs Study vs Family</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
     <details>
         <summary>6. Society & Institutions (The State of the Nation)</summary>
         <div class="grid">
-            <div class="card"><div class="placeholder-text">Coming Soon: NHS, Crime & Prisons</div></div>
+            <div class="card">
+                <h3>NHS Waiting Lists (The Long View)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Crime Rates (Violent vs Theft)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Prison Population (Men vs Women)</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Education: University Degrees %</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
     <details>
         <summary>7. Global Context (The G7 Race)</summary>
         <div class="grid">
-            <div class="card"><div class="placeholder-text">Coming Soon: UK vs G7 Comparisons</div></div>
+            <div class="card">
+                <h3>GDP Growth: UK vs G7 Average</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>Inflation Peaks: UK vs G7</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
+            <div class="card">
+                <h3>National Debt: UK vs G7</h3>
+                <div class="chart-box ghost">Coming Soon</div>
+            </div>
         </div>
     </details>
 
