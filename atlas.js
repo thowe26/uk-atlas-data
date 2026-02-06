@@ -88,26 +88,48 @@ function drawTaxComposition(elemId) {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
             const data = results.data.filter(r => r.Year);
+            
+            // Helper to format data for Linear Scale
+            const fmt = (val) => val ? parseFloat(val) : null;
+
             new Chart(document.getElementById(elemId), {
                 type: 'line',
                 data: {
-                    labels: data.map(r => r.Year),
                     datasets: [
-                        { label: 'Income Tax', data: data.map(r => r.Income), borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 3, pointRadius: 0, tension: 0.1 },
-                        { label: 'VAT', data: data.map(r => r.VAT), borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 2, pointRadius: 0, borderDash: [5, 5], tension: 0.1 },
-                        { label: 'National Insurance', data: data.map(r => r.NI), borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 2, pointRadius: 0, borderDash: [2, 2], tension: 0.1 }
+                        { 
+                            label: 'Income Tax', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.Income)})), 
+                            borderColor: '#27ae60', backgroundColor: '#27ae60', borderWidth: 3, pointRadius: 0, tension: 0.1 
+                        },
+                        { 
+                            label: 'VAT', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.VAT)})), 
+                            borderColor: '#c0392b', backgroundColor: '#c0392b', borderWidth: 2, pointRadius: 0, borderDash: [5, 5], tension: 0.1 
+                        },
+                        { 
+                            label: 'National Insurance', 
+                            data: data.map(r => ({x: parseInt(r.Year), y: fmt(r.NI)})), 
+                            borderColor: '#2980b9', backgroundColor: '#2980b9', borderWidth: 2, pointRadius: 0, borderDash: [2, 2], tension: 0.1 
+                        }
                     ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     scales: { 
-                        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                        x: { 
+                            type: 'linear', // <--- THE KEY FIX
+                            min: 1900, 
+                            max: 2025, 
+                            ticks: { 
+                                callback: v => String(v).replace(/,/g, '') 
+                            } 
+                        },
                         y: { beginAtZero: true, title: { display: true, text: 'Rate %' } }
                     },
                     plugins: { 
                         legend: { display: true, position: 'bottom' },
-                        annotation: historicalContext // Keeps the War overlays
+                        annotation: historicalContext // Now this will work!
                     }
                 }
             });
