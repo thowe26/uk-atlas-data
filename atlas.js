@@ -83,7 +83,7 @@ Papa.parse('data/real_house_prices.csv', { download: true, header: true, skipEmp
 Papa.parse('data/house_price_ratio.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartHouseRatio', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Price to Earnings Ratio', '#2c3e50', 'line', true); } });
 Papa.parse('data/tax_burden.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxBurden', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax % of GDP', '#555555', 'line', true); } });
 Papa.parse('data/tax_per_capita.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartTaxCapita', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Tax Per Person', '#8e44ad', 'line', true, true); } });
-
+Papa.parse('data/real_wages.csv', { download: true, header: true, skipEmptyLines: true, complete: function(results) { renderChart('chartRealWages', results.data.filter(r => r.Year).map(r => ({ date: r.Year, value: parseFloat(r.Value) })), 'Weekly Earnings (2024 £)', '#1abc9c', 'line', true, true); } });
 
 // Function for Tax Revenue Sources (Stacked % of GDP) - NOW WITH CORP TAX
 function drawTaxComposition(elemId) {
