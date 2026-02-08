@@ -4,43 +4,25 @@
 
 const historicalContext = {
     annotations: {
-        ww1: { 
-            type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['WW1'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        },
-        ww2: { 
-            type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['WW2'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        },
-        energy: { 
-            type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['Energy', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        },
-        recession90: { 
-            type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['90s', 'Recession'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        },
-        finance: { 
-            type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['2008', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        },
-        covid: { 
-            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
-        }
+        ww1: { type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['WW1'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
+        ww2: { type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['WW2'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
+        finance: { type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['2008 Crash'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
+        covid: { type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } }
     }
 };
 
 // ==========================================
-// 2. UNIVERSAL RENDERER
+// 2. UNIVERSAL RENDERERS
 // ==========================================
 
 function renderChart(elemId, data, column, label, color, type = 'line', isCurrency = false, isMillions = false) {
-    // 1. Filter data: only rows where this specific column has a value
-    const cleanData = data.filter(r => r[column] && r[column] !== "");
+    if (!document.getElementById(elemId)) return;
+    
+    // Safety check for missing column
+    if (data.length > 0 && data[0][column] === undefined) return;
 
-    // 2. Auto-detect Percentage
-    const isPercentage = label.includes('%') || label.includes('Rate') || label.includes('Growth') || label.includes('Ratio');
+    const cleanData = data.filter(r => r[column] && r[column] !== "");
+    const isPercentage = label.includes('%') || label.includes('Rate') || label.includes('Growth');
 
     new Chart(document.getElementById(elemId), {
         type: type,
@@ -50,7 +32,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
                 label: label,
                 data: cleanData.map(d => parseFloat(d[column])),
                 borderColor: color,
-                backgroundColor: color + '20', // Add transparency
+                backgroundColor: color + '20',
                 borderWidth: 2,
                 pointRadius: 0,
                 hoverRadius: 4,
@@ -62,20 +44,12 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { 
-                    type: 'linear', 
-                    min: parseInt(cleanData[0].Year), 
-                    max: parseInt(cleanData[cleanData.length-1].Year), 
-                    ticks: { callback: v => String(v).replace(/,/g, '') } 
-                },
+                x: { type: 'linear', min: parseInt(cleanData[0].Year), max: parseInt(cleanData[cleanData.length-1].Year), ticks: { callback: v => String(v).replace(/,/g, '') } },
                 y: {
                     beginAtZero: false,
                     ticks: {
                         callback: function(value) {
-                            if (isCurrency) {
-                                if (value >= 1000) return '£' + (value/1000) + 'k';
-                                return '£' + value;
-                            }
+                            if (isCurrency) return (value >= 1000) ? '£' + (value/1000) + 'k' : '£' + value;
                             if (isPercentage) return value + '%';
                             if (isMillions) return value + 'm';
                             return value;
@@ -85,21 +59,17 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
             },
             plugins: {
                 legend: { display: false },
-                tooltip: { 
-                    callbacks: { 
-                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
-                        label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isPercentage ? '%' : '') + (isMillions ? 'm' : '') 
-                    } 
-                },
+                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, ''), label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isPercentage ? '%' : '') } },
                 annotation: historicalContext
             }
         }
     });
 }
 
-// Special Function: Stacked Area Charts (For Taxes, Sectors, etc.)
 function renderStacked(elemId, data, columns, colors, labels, yTitle) {
-    // Filter to rows that have data for the first column
+    if (!document.getElementById(elemId)) return;
+    if (data.length > 0 && data[0][columns[0]] === undefined) return;
+
     const cleanData = data.filter(r => r[columns[0]]);
 
     new Chart(document.getElementById(elemId), {
@@ -108,7 +78,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
             labels: cleanData.map(d => d.Year),
             datasets: columns.map((col, i) => ({
                 label: labels[i],
-                data: cleanData.map(d => parseFloat(d[col] || 0)), // Handle blanks as 0
+                data: cleanData.map(d => parseFloat(d[col] || 0)),
                 borderColor: colors[i],
                 backgroundColor: colors[i],
                 borderWidth: 0,
@@ -126,21 +96,23 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                 annotation: historicalContext,
-                tooltip: { 
-                    callbacks: { 
-                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
-                        footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } 
-                    } 
-                }
+                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, '') } }
             }
         }
     });
 }
 
-// Special Function: Multi-Line Comparison (For Sector Performance)
 function renderMultiLine(elemId, data, columns, labels, colors) {
-    // Filter to rows that have data (starting from approx 2000 for this specific story)
-    const cleanData = data.filter(r => r.Year >= 1900 && r[columns[0]]);
+    if (!document.getElementById(elemId)) return;
+    
+    // Safety check: ensure the first column actually exists in data
+    if (data.length > 0 && data[0][columns[0]] === undefined) {
+        console.warn(`Missing column: ${columns[0]} for chart ${elemId}`);
+        return;
+    }
+
+    // Filter logic updated
+    const cleanData = data.filter(r => r.Year && r[columns[0]]);
 
     new Chart(document.getElementById(elemId), {
         type: 'line',
@@ -151,7 +123,7 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
                 data: cleanData.map(d => parseFloat(d[col])),
                 borderColor: colors[i],
                 backgroundColor: 'transparent',
-                borderWidth: (col === 'Sect_Finance' || col === 'Sect_Prop') ? 4 : 2, // Highlight the crash victims
+                borderWidth: (col === 'Sect_Finance' || col === 'Sect_Prop') ? 3 : 1.5,
                 pointRadius: 0,
                 tension: 0.3
             }))
@@ -160,34 +132,26 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { type: 'linear', min: 2000, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
-                y: { title: { display: true, text: 'Rebased Value (2007 = 100)' } } // Explains the index
+                x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
+                y: { title: { display: true, text: 'Relative Value (2025 = 100)' } }
             },
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
                 annotation: historicalContext,
-                tooltip: { 
-                    callbacks: { 
-                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
-                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(0)
-                    } 
-                }
+                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, '') } }
             }
         }
     });
 }
 
 // ==========================================
-// 3. MASTER EXECUTION (FROM GOOGLE SHEETS)
+// 3. MASTER EXECUTION
 // ==========================================
 
-// Your Published Google Sheet URL
 const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRX_OSl_z-Fnou-iUO0KI-lnION2I1NzYhWS_URwjfF_U6jA4ccqAm1mFTpZjf6wKD0bX9dhD3OAmyi/pub?gid=0&single=true&output=csv';
 
 Papa.parse(sheetURL, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
+    download: true, header: true, skipEmptyLines: true,
     complete: function(results) {
         const data = results.data;
 
@@ -198,16 +162,13 @@ Papa.parse(sheetURL, {
         renderChart('chartUnemployment', data, 'Unemployment', 'Unemployment Rate', '#2980b9');
         renderChart('chartInterest', data, 'Interest_Rate', 'Interest Rate', '#e67e22');
         
-        // Tax Revenue Stack (The "Big 4" Sources)
-        renderStacked(
-            'chartTaxRate', 
-            data, 
-            ['Tax_Rev_Income', 'Tax_Rev_NI', 'Tax_Rev_VAT', 'Tax_Rev_Corp', 'Tax_Rev_Other'],
-            ['#27ae60', '#2980b9', '#c0392b', '#e67e22', '#95a5a6'],
-            ['Income Tax', 'National Insurance', 'VAT', 'Corporation Tax', 'Other'],
-            '% of GDP'
+        // This is the CRASH chart (Multi-line) using your specific headers
+        renderMultiLine('chartSectorCrash', data,
+            ['Sect_Finance', 'Sect_Prop', 'Sect_Materials', 'Sect_Energy', 'Sect_Tech', 'Sect_Health', 'Sect_Consumer', 'Sect_Industry', 'Sect_Util'],
+            ['Financials', 'Property', 'Materials', 'Energy', 'Technology', 'Health Care', 'Consumer', 'Industrials', 'Utilities'],
+            ['#c0392b', '#e74c3c', '#d35400', '#f39c12', '#8e44ad', '#27ae60', '#3498db', '#7f8c8d', '#95a5a6']
         );
-
+        
         // --- CHAPTER 2: INDIVIDUAL ---
         renderChart('chartDebtCapita', data, 'Debt_Per_Capita', 'Real Debt', '#d35400', 'line', true);
         renderChart('chartGDPCapita', data, 'GDP_Per_Capita_Growth', 'Growth Per Person %', '#27ae60');
@@ -217,68 +178,28 @@ Papa.parse(sheetURL, {
         renderChart('chartTaxCapita', data, 'Tax_Per_Capita', 'Tax Per Person', '#8e44ad', 'line', true);
 
         // --- CHAPTER 3: INDUSTRY ---
-        // 1. Manufacturing vs Services (GDP)
-        renderStacked(
-            'chartSectors',
-            data,
+        renderStacked('chartSectors', data,
             ['Sector_Services', 'Sector_Industry', 'Sector_Agri'],
             ['#f1c40f', '#34495e', '#27ae60'],
             ['Services', 'Industry', 'Agriculture'],
             '% of Economy'
         );
 
-        // 2. Workforce Composition
-        renderStacked(
-            'chartWorkforce',
-            data,
+        renderStacked('chartWorkforce', data,
             ['Work_Public', 'Work_Services', 'Work_Industry', 'Work_Agri'],
             ['#3498db', '#f1c40f', '#7f8c8d', '#27ae60'],
             ['Public Sector', 'Services', 'Industry', 'Agriculture'],
             '% of Workforce'
         );
 
-        // 3. Stock Market Structure (Market Cap)
-        renderStacked(
-            'chartMarket',
-            data,
-            ['Mkt_Consumer', 'Mkt_Finance', 'Mkt_Resources', 'Mkt_Industry', 'Mkt_Railways'],
-            ['#8e44ad', '#2980b9', '#e67e22', '#7f8c8d', '#27ae60'],
-            ['Consumer & Pharma', 'Finance (Banks)', 'Oil & Mining', 'Manufacturing', 'Railways & Util'],
-            '% of Market Cap'
-        );
-
-        // 4. Sector Impact: The 2008 Crash (Rebased 2007=100)
-        renderMultiLine(
-            'chartSectorCrash',
-            data,
-            [
-                'Sect_Finance', 'Sect_Prop',   // The Crash Victims (Red)
-                'Sect_Materials', 'Sect_Energy', // The Volatile Commodities (Orange)
-                'Sect_Tech', 'Sect_Health',    // The Growth/Defensive Winners (Green/Purple)
-                'Sect_Consumer', 'Sect_Industry', 'Sect_Util' // The "Real Economy" (Grey/Blue)
-            ],
-            [
-                'Financials', 'Property', 
-                'Materials', 'Energy', 
-                'Technology', 'Health Care', 
-                'Consumer', 'Industrials', 'Utilities'
-            ],
-            [
-                '#c0392b', '#e74c3c', // Reds
-                '#d35400', '#f39c12', // Oranges
-                '#8e44ad', '#27ae60', // Purple/Green
-                '#3498db', '#7f8c8d', '#95a5a6' // Blues/Greys
-            ]
-        );
-
         // --- CHAPTER 4: POPULATION ---
         renderChart('chartPopulation', data, 'Population', 'Total Population', '#16a085', 'line', false, true);
-
     }
 });
 
-// NOTE: Migration charts still use separate files because their structure is unique.
+// Legacy Migration Charts
 function drawManualBar(elemId, file, colLabel, colValue) {
+    if (!document.getElementById(elemId)) return;
     Papa.parse(`data/${file}`, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
@@ -288,6 +209,7 @@ function drawManualBar(elemId, file, colLabel, colValue) {
     });
 }
 function drawMirrorChart(elemId, file) {
+    if (!document.getElementById(elemId)) return;
      Papa.parse(`data/${file}`, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
