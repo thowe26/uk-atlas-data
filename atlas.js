@@ -197,6 +197,15 @@ Papa.parse(sheetURL, {
         renderChart('chartGDP', data, 'GDP_Growth', 'GDP Growth %', '#2c3e50');
         renderChart('chartUnemployment', data, 'Unemployment', 'Unemployment Rate', '#2980b9');
         renderChart('chartInterest', data, 'Interest_Rate', 'Interest Rate', '#e67e22');
+        // [NEW: SECTOR CRASH ANALYSIS]
+        renderMultiLine(
+            'chartSectorCrash',
+            data,
+            ['Sect_Finance', 'Sect_Prop', 'Sect_Energy', 'Sect_Tech', 'Sect_Health'], // I picked the 5 most interesting stories to avoid clutter
+            ['Financials', 'Property', 'Energy', 'Technology', 'Health Care'],
+            ['#c0392b', '#e74c3c', '#f39c12', '#8e44ad', '#27ae60'] // Red for the crashers, Green/Purple for winners
+        );
+        
         
         // Tax Revenue Stack
         renderStacked(
