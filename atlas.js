@@ -4,10 +4,30 @@
 
 const historicalContext = {
     annotations: {
-        ww1: { type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['WW1'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
-        ww2: { type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['WW2'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
-        finance: { type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: ['2008 Crash'], display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } },
-        covid: { type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, color: '#555', font: { size: 10 } } }
+        ww1: { 
+            type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['WW1'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        ww2: { 
+            type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['WW2'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        energy: { 
+            type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['Energy', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        recession90: { 
+            type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['90s', 'Recession'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        finance: { 
+            type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: ['Financial', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        },
+        covid: { 
+            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
+            label: { content: 'Covid', display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+        }
     }
 };
 
@@ -96,7 +116,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                 annotation: historicalContext,
-                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, '') } }
+                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, ''), footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } } }
             }
         }
     });
@@ -104,15 +124,10 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
 
 function renderMultiLine(elemId, data, columns, labels, colors) {
     if (!document.getElementById(elemId)) return;
-    
-    // Safety check: ensure the first column actually exists in data
-    if (data.length > 0 && data[0][columns[0]] === undefined) {
-        console.warn(`Missing column: ${columns[0]} for chart ${elemId}`);
-        return;
-    }
+    if (data.length > 0 && data[0][columns[0]] === undefined) return;
 
-    // Filter logic updated
-    const cleanData = data.filter(r => r.Year && r[columns[0]]);
+    // Start from 1900
+    const cleanData = data.filter(r => r.Year >= 1900 && r[columns[0]]);
 
     new Chart(document.getElementById(elemId), {
         type: 'line',
@@ -133,12 +148,12 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
             interaction: { mode: 'index', intersect: false },
             scales: {
                 x: { type: 'linear', min: 1900, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
-                y: { title: { display: true, text: 'Relative Value (2025 = 100)' } }
+                y: { title: { display: true, text: 'Relative Value (2000 = 100)' } }
             },
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
                 annotation: historicalContext,
-                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, '') } }
+                tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, ''), label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(0) } }
             }
         }
     });
@@ -162,7 +177,15 @@ Papa.parse(sheetURL, {
         renderChart('chartUnemployment', data, 'Unemployment', 'Unemployment Rate', '#2980b9');
         renderChart('chartInterest', data, 'Interest_Rate', 'Interest Rate', '#e67e22');
         
-        // This is the CRASH chart (Multi-line) using your specific headers
+        // RESTORED: National Tax Revenue Stack
+        renderStacked('chartTaxRate', data, 
+            ['Tax_Rev_Income', 'Tax_Rev_NI', 'Tax_Rev_VAT', 'Tax_Rev_Corp', 'Tax_Rev_Other'],
+            ['#27ae60', '#2980b9', '#c0392b', '#e67e22', '#95a5a6'],
+            ['Income Tax', 'National Insurance', 'VAT', 'Corporation Tax', 'Other'],
+            '% of GDP'
+        );
+
+        // SECTOR PERFORMANCE (With Divergent Ending)
         renderMultiLine('chartSectorCrash', data,
             ['Sect_Finance', 'Sect_Prop', 'Sect_Materials', 'Sect_Energy', 'Sect_Tech', 'Sect_Health', 'Sect_Consumer', 'Sect_Industry', 'Sect_Util'],
             ['Financials', 'Property', 'Materials', 'Energy', 'Technology', 'Health Care', 'Consumer', 'Industrials', 'Utilities'],
