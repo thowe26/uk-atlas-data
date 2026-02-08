@@ -22,7 +22,7 @@ const historicalContext = {
         },
         finance: { 
             type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
-            label: { content: ['2008', 'Financial', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
+            label: { content: ['Financial', 'Crisis'], display: true, position: { x: 'center', y: 'start' }, textAlign: 'center', yAdjust: 0, color: '#555', font: { size: 10, weight: 'normal' } } 
         },
         covid: { 
             type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.2)', borderWidth: 0, 
@@ -87,7 +87,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
                 legend: { display: false },
                 tooltip: { 
                     callbacks: { 
-                        title: ctx => String(ctx[0].label).replace(/,/g, ''), // <--- FIX HERE
+                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
                         label: ctx => label + ': ' + (isCurrency ? '£' : '') + ctx.parsed.y.toLocaleString() + (isPercentage ? '%' : '') + (isMillions ? 'm' : '') 
                     } 
                 },
@@ -128,7 +128,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
                 annotation: historicalContext,
                 tooltip: { 
                     callbacks: { 
-                        title: ctx => String(ctx[0].label).replace(/,/g, ''), // <--- FIX HERE
+                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
                         footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } 
                     } 
                 }
@@ -197,17 +197,8 @@ Papa.parse(sheetURL, {
         renderChart('chartGDP', data, 'GDP_Growth', 'GDP Growth %', '#2c3e50');
         renderChart('chartUnemployment', data, 'Unemployment', 'Unemployment Rate', '#2980b9');
         renderChart('chartInterest', data, 'Interest_Rate', 'Interest Rate', '#e67e22');
-        // [NEW: SECTOR CRASH ANALYSIS]
-        renderMultiLine(
-            'chartSectorCrash',
-            data,
-            ['Sect_Finance', 'Sect_Prop', 'Sect_Energy', 'Sect_Tech', 'Sect_Health'], // I picked the 5 most interesting stories to avoid clutter
-            ['Financials', 'Property', 'Energy', 'Technology', 'Health Care'],
-            ['#c0392b', '#e74c3c', '#f39c12', '#8e44ad', '#27ae60'] // Red for the crashers, Green/Purple for winners
-        );
         
-        
-        // Tax Revenue Stack
+        // Tax Revenue Stack (The "Big 4" Sources)
         renderStacked(
             'chartTaxRate', 
             data, 
@@ -226,6 +217,7 @@ Papa.parse(sheetURL, {
         renderChart('chartTaxCapita', data, 'Tax_Per_Capita', 'Tax Per Person', '#8e44ad', 'line', true);
 
         // --- CHAPTER 3: INDUSTRY ---
+        // 1. Manufacturing vs Services (GDP)
         renderStacked(
             'chartSectors',
             data,
@@ -235,6 +227,7 @@ Papa.parse(sheetURL, {
             '% of Economy'
         );
 
+        // 2. Workforce Composition
         renderStacked(
             'chartWorkforce',
             data,
@@ -242,6 +235,40 @@ Papa.parse(sheetURL, {
             ['#3498db', '#f1c40f', '#7f8c8d', '#27ae60'],
             ['Public Sector', 'Services', 'Industry', 'Agriculture'],
             '% of Workforce'
+        );
+
+        // 3. Stock Market Structure (Market Cap)
+        renderStacked(
+            'chartMarket',
+            data,
+            ['Mkt_Consumer', 'Mkt_Finance', 'Mkt_Resources', 'Mkt_Industry', 'Mkt_Railways'],
+            ['#8e44ad', '#2980b9', '#e67e22', '#7f8c8d', '#27ae60'],
+            ['Consumer & Pharma', 'Finance (Banks)', 'Oil & Mining', 'Manufacturing', 'Railways & Util'],
+            '% of Market Cap'
+        );
+
+        // 4. Sector Impact: The 2008 Crash (Rebased 2007=100)
+        renderMultiLine(
+            'chartSectorCrash',
+            data,
+            [
+                'Sect_Finance', 'Sect_Prop',   // The Crash Victims (Red)
+                'Sect_Materials', 'Sect_Energy', // The Volatile Commodities (Orange)
+                'Sect_Tech', 'Sect_Health',    // The Growth/Defensive Winners (Green/Purple)
+                'Sect_Consumer', 'Sect_Industry', 'Sect_Util' // The "Real Economy" (Grey/Blue)
+            ],
+            [
+                'Financials', 'Property', 
+                'Materials', 'Energy', 
+                'Technology', 'Health Care', 
+                'Consumer', 'Industrials', 'Utilities'
+            ],
+            [
+                '#c0392b', '#e74c3c', // Reds
+                '#d35400', '#f39c12', // Oranges
+                '#8e44ad', '#27ae60', // Purple/Green
+                '#3498db', '#7f8c8d', '#95a5a6' // Blues/Greys
+            ]
         );
 
         // --- CHAPTER 4: POPULATION ---
