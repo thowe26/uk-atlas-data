@@ -137,6 +137,46 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
     });
 }
 
+// Special Function: Multi-Line Comparison (For Sector Performance)
+function renderMultiLine(elemId, data, columns, labels, colors) {
+    // Filter to rows that have data (starting from approx 2000 for this specific story)
+    const cleanData = data.filter(r => r.Year >= 2000 && r[columns[0]]);
+
+    new Chart(document.getElementById(elemId), {
+        type: 'line',
+        data: {
+            labels: cleanData.map(d => d.Year),
+            datasets: columns.map((col, i) => ({
+                label: labels[i],
+                data: cleanData.map(d => parseFloat(d[col])),
+                borderColor: colors[i],
+                backgroundColor: 'transparent',
+                borderWidth: (col === 'Sect_Finance' || col === 'Sect_Prop') ? 4 : 2, // Highlight the crash victims
+                pointRadius: 0,
+                tension: 0.3
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { type: 'linear', min: 2000, max: 2025, ticks: { callback: v => String(v).replace(/,/g, '') } },
+                y: { title: { display: true, text: 'Rebased Value (2007 = 100)' } } // Explains the index
+            },
+            plugins: {
+                legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
+                annotation: historicalContext,
+                tooltip: { 
+                    callbacks: { 
+                        title: ctx => String(ctx[0].label).replace(/,/g, ''),
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(0)
+                    } 
+                }
+            }
+        }
+    });
+}
+
 // ==========================================
 // 3. MASTER EXECUTION (FROM GOOGLE SHEETS)
 // ==========================================
