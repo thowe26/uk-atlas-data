@@ -64,7 +64,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { type: 'linear', min: parseInt(cleanData[0].Year), max: parseInt(cleanData[cleanData.length-1].Year), ticks: { callback: v => String(v).replace(/,/g, '') } },
+                x: { type: 'linear', min: 1900, max: parseInt(cleanData[cleanData.length-1].Year), ticks: { callback: v => String(v).replace(/,/g, '') } },
                 y: {
                     beginAtZero: false,
                     ticks: {
