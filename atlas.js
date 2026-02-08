@@ -136,7 +136,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
 // Special Function: Multi-Line Comparison (For Sector Performance)
 function renderMultiLine(elemId, data, columns, labels, colors) {
     // Filter to rows that have data (starting from approx 2000 for this specific story)
-    const cleanData = data.filter(r => r.Year >= 2000 && r[columns[0]]);
+    const cleanData = data.filter(r => r.Year >= 1900 && r[columns[0]]);
 
     new Chart(document.getElementById(elemId), {
         type: 'line',
