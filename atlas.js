@@ -5,58 +5,70 @@
 // Detect if screen is small (mobile)
 const isMobile = window.innerWidth < 768;
 
-// Set Line Thickness: 1px for mobile (crisp), 2.5px for desktop (bold)
+// Set Line Thickness: 1px for mobile (crisp), 2.5px for desktop (standard)
 const lineThick = isMobile ? 1 : 2.5;
 
-// ANNOTATIONS: Rotated -90 degrees to fit on mobile without overlapping
+// ANNOTATIONS: Rotated -90 degrees on mobile, SKINNY font (Weight 300)
 const historicalContext = {
     annotations: {
         ww1: { 
-            type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW1', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 20, // Vertical Text
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: 20, 
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         },
         ww2: { 
-            type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW2', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 20, 
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: 20, 
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         },
         energy: { 
-            type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Energy Crisis', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 40, // Pushed down further to stagger
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: isMobile ? 40 : 20, // Staggered for mobile
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         },
         recession90: { 
-            type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Recession', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 30, 
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: isMobile ? 30 : 20, 
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         },
         finance: { 
-            type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: '2008 Crash', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 35, 
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: isMobile ? 35 : 20, 
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         },
         covid: { 
-            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.15)', borderWidth: 0, 
+            type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Covid', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, yAdjust: 20, 
-                color: '#7f8c8d', font: { size: 10 } 
+                rotation: isMobile ? -90 : 0, 
+                yAdjust: 20, 
+                color: '#7f8c8d', 
+                font: { size: 10, weight: 300 } // <--- SKINNY FONT
             } 
         }
     }
@@ -82,7 +94,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
                 data: cleanData.map(d => parseFloat(d[column])),
                 borderColor: color,
                 backgroundColor: color + '20',
-                borderWidth: lineThick, // <--- Using Dynamic Thickness
+                borderWidth: lineThick, // <--- Dynamic Thickness (1px on mobile)
                 pointRadius: 0,
                 hoverRadius: 4,
                 fill: true,
@@ -130,7 +142,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
                 data: cleanData.map(d => parseFloat(d[col] || 0)),
                 borderColor: colors[i],
                 backgroundColor: colors[i],
-                borderWidth: 0, // Stacked areas don't need borders
+                borderWidth: 0,
                 pointRadius: 0,
                 fill: true
             }))
@@ -143,7 +155,7 @@ function renderStacked(elemId, data, columns, colors, labels, yTitle) {
                 y: { stacked: true, beginAtZero: true, title: { display: true, text: yTitle } }
             },
             plugins: {
-                legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 10 } } },
+                legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } },
                 annotation: historicalContext,
                 tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, ''), footer: (items) => { const total = items.reduce((a, b) => a + b.parsed.y, 0); return 'Total: ' + total.toFixed(1); } } }
             }
@@ -166,7 +178,7 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
                 data: cleanData.map(d => parseFloat(d[col])),
                 borderColor: colors[i],
                 backgroundColor: 'transparent',
-                // Dynamic border width: Thinner on mobile
+                // Thinner lines on mobile, slightly thicker for key lines
                 borderWidth: (col === 'Sect_Finance' || col === 'Sect_Prop') ? (lineThick + 1) : lineThick,
                 pointRadius: 0,
                 tension: 0.3
@@ -178,11 +190,11 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
             scales: {
                 x: { 
                     type: 'linear', 
-                    min: 1900, // Forces the empty start (1900-1974)
+                    min: 1900, 
                     max: 2025, 
                     ticks: { callback: v => String(v).replace(/,/g, '') } 
                 },
-                y: { title: { display: true, text: 'Relative Value (1975 = 100)' } }
+                y: { title: { display: true, text: 'Relative Value (2000 = 100)' } }
             },
             plugins: {
                 legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
