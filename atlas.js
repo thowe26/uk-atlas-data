@@ -8,67 +8,67 @@ const isMobile = window.innerWidth < 768;
 // Set Line Thickness: 1px for mobile (crisp), 2.5px for desktop (standard)
 const lineThick = isMobile ? 1 : 2.5;
 
-// ANNOTATIONS: Rotated -90 degrees on mobile, SKINNY font (Weight 300)
+// ANNOTATIONS: ALWAYS VERTICAL (-90), Skinny Font (300)
 const historicalContext = {
     annotations: {
         ww1: { 
             type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW1', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
+                rotation: -90, // <--- FIXED: Always Vertical
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         },
         ww2: { 
             type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW2', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
+                rotation: -90, // <--- FIXED: Always Vertical
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         },
         energy: { 
             type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Energy Crisis', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
-                yAdjust: isMobile ? 40 : 20, // Staggered for mobile
+                rotation: -90, // <--- FIXED: Always Vertical
+                yAdjust: 40, // Staggered height to avoid collision
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         },
         recession90: { 
             type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Recession', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
-                yAdjust: isMobile ? 30 : 20, 
+                rotation: -90, // <--- FIXED: Always Vertical
+                yAdjust: 30, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         },
         finance: { 
             type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: '2008 Crash', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
-                yAdjust: isMobile ? 35 : 20, 
+                rotation: -90, // <--- FIXED: Always Vertical
+                yAdjust: 35, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         },
         covid: { 
             type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Covid', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: isMobile ? -90 : 0, 
+                rotation: -90, // <--- FIXED: Always Vertical
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } // <--- SKINNY FONT
+                font: { size: 10, weight: 300 } 
             } 
         }
     }
@@ -94,7 +94,7 @@ function renderChart(elemId, data, column, label, color, type = 'line', isCurren
                 data: cleanData.map(d => parseFloat(d[column])),
                 borderColor: color,
                 backgroundColor: color + '20',
-                borderWidth: lineThick, // <--- Dynamic Thickness (1px on mobile)
+                borderWidth: lineThick,
                 pointRadius: 0,
                 hoverRadius: 4,
                 fill: true,
@@ -178,7 +178,6 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
                 data: cleanData.map(d => parseFloat(d[col])),
                 borderColor: colors[i],
                 backgroundColor: 'transparent',
-                // Thinner lines on mobile, slightly thicker for key lines
                 borderWidth: (col === 'Sect_Finance' || col === 'Sect_Prop') ? (lineThick + 1) : lineThick,
                 pointRadius: 0,
                 tension: 0.3
@@ -190,7 +189,7 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
             scales: {
                 x: { 
                     type: 'linear', 
-                    min: 1900, 
+                    min: 1900, // Keeps the 1900 start date visible
                     max: 2025, 
                     ticks: { callback: v => String(v).replace(/,/g, '') } 
                 },
