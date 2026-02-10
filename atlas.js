@@ -8,67 +8,67 @@ const isMobile = window.innerWidth < 768;
 // Set Line Thickness: 1px for mobile (crisp), 2.5px for desktop (standard)
 const lineThick = isMobile ? 1 : 2.5;
 
-// ANNOTATIONS: ALWAYS VERTICAL (-90), Skinny Font (300)
+// ANNOTATIONS: Rotated -90 degrees, 'lighter' font weight for skinny text
 const historicalContext = {
     annotations: {
         ww1: { 
             type: 'box', xMin: 1914, xMax: 1918, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW1', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
+                rotation: -90, 
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } // <--- CHANGED TO 'lighter'
             } 
         },
         ww2: { 
             type: 'box', xMin: 1939, xMax: 1945, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'WW2', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
+                rotation: -90, 
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } 
             } 
         },
         energy: { 
             type: 'box', xMin: 1973, xMax: 1976, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Energy Crisis', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
-                yAdjust: 40, // Staggered height to avoid collision
+                rotation: -90, 
+                yAdjust: 40, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } 
             } 
         },
         recession90: { 
             type: 'box', xMin: 1990, xMax: 1992, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Recession', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
+                rotation: -90, 
                 yAdjust: 30, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } 
             } 
         },
         finance: { 
             type: 'box', xMin: 2008, xMax: 2009, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: '2008 Crash', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
+                rotation: -90, 
                 yAdjust: 35, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } 
             } 
         },
         covid: { 
             type: 'box', xMin: 2020, xMax: 2022, backgroundColor: 'rgba(50, 50, 50, 0.1)', borderWidth: 0, 
             label: { 
                 content: 'Covid', display: true, position: { x: 'center', y: 'start' }, 
-                rotation: -90, // <--- FIXED: Always Vertical
+                rotation: -90, 
                 yAdjust: 20, 
                 color: '#7f8c8d', 
-                font: { size: 10, weight: 300 } 
+                font: { size: 10, weight: 'lighter' } 
             } 
         }
     }
@@ -189,14 +189,22 @@ function renderMultiLine(elemId, data, columns, labels, colors) {
             scales: {
                 x: { 
                     type: 'linear', 
-                    min: 1900, // Keeps the 1900 start date visible
+                    min: 1900, 
                     max: 2025, 
                     ticks: { callback: v => String(v).replace(/,/g, '') } 
                 },
                 y: { title: { display: true, text: 'Relative Value (2000 = 100)' } }
             },
             plugins: {
-                legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } },
+                legend: { 
+                    display: true, 
+                    position: 'bottom', 
+                    labels: { 
+                        boxWidth: 8,  // <--- REDUCED: Smaller color boxes
+                        padding: 6,   // <--- REDUCED: Tighter spacing
+                        font: { size: 9 } // <--- REDUCED: Smaller text
+                    } 
+                },
                 annotation: historicalContext,
                 tooltip: { callbacks: { title: ctx => String(ctx[0].label).replace(/,/g, ''), label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(0) } }
             }
