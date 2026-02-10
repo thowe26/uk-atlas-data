@@ -9,15 +9,40 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    
-    <style>
+
+<style>
+        /* Placeholder for missing charts */
         .ghost { 
             display: flex; align-items: center; justify-content: center; 
             border: 2px dashed #bdc3c7; border-radius: 8px; 
             color: #bdc3c7; font-weight: bold; font-style: italic;
             background: #fafafa;
+            height: 100%; /* Ensures it fills the box */
+        }
+
+        /* CARD HEADERS: Default (Desktop) */
+        .card h3 {
+            font-size: 1rem;       /* Already slightly smaller than default */
+            margin-bottom: 8px;    /* Space between title and chart */
+            white-space: nowrap;   /* Tries to keep text on one line */
+            overflow: hidden;      /* Hides text if it gets too long */
+            text-overflow: ellipsis; /* Adds "..." if text is cut off */
+        }
+
+        /* CARD HEADERS: Mobile Fix (Screens narrower than 600px) */
+        @media (max-width: 600px) {
+            .card h3 {
+                font-size: 0.8rem; /* Much smaller font for phones */
+                white-space: normal; /* Allow wrapping on very small screens so it doesn't cut off */
+                line-height: 1.2;    /* Tighter line spacing */
+            }
+            
+            .chart-box {
+                height: 180px; /* Optional: Makes charts slightly shorter on mobile to see more at once */
+            }
         }
     </style>
+    
 </head>
 <body>
 
