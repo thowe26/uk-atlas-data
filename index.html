@@ -9,40 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="style.css">
-
-<style>
-        /* Placeholder for missing charts */
-        .ghost { 
-            display: flex; align-items: center; justify-content: center; 
-            border: 2px dashed #bdc3c7; border-radius: 8px; 
-            color: #bdc3c7; font-weight: bold; font-style: italic;
-            background: #fafafa;
-            height: 100%; /* Ensures it fills the box */
-        }
-
-        /* CARD HEADERS: Default (Desktop) */
-        .card h3 {
-            font-size: 1rem;       /* Already slightly smaller than default */
-            margin-bottom: 8px;    /* Space between title and chart */
-            white-space: nowrap;   /* Tries to keep text on one line */
-            overflow: hidden;      /* Hides text if it gets too long */
-            text-overflow: ellipsis; /* Adds "..." if text is cut off */
-        }
-
-        /* CARD HEADERS: Mobile Fix (Screens narrower than 600px) */
-        @media (max-width: 600px) {
-            .card h3 {
-                font-size: 0.8rem; /* Much smaller font for phones */
-                white-space: normal; /* Allow wrapping on very small screens so it doesn't cut off */
-                line-height: 1.2;    /* Tighter line spacing */
-            }
-            
-            .chart-box {
-                height: 250px; /* Optional: Makes charts slightly shorter on mobile to see more at once */
-            }
-        }
-    </style>
-    
 </head>
 <body>
 
@@ -52,172 +18,172 @@
         <div class="subtitle">100 Years in 100 Graphs</div>
     </header>
 
-    <details>
+    <details open>
         <summary>1. The Macro Economy (The Nation's Wallet)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartInflation">
                 <h3>Inflation (CPI)</h3>
-                <div class="chart-box"><canvas id="chartInflation"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartDebt">
                 <h3>National Debt (% of GDP)</h3>
-                <div class="chart-box"><canvas id="chartDebt"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartGDP">
                 <h3>GDP Growth (Annual)</h3>
-                <div class="chart-box"><canvas id="chartGDP"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartUnemployment">
                 <h3>Unemployment Rate</h3>
-                <div class="chart-box"><canvas id="chartUnemployment"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
-                <h3>Interest Rates</h3>
-                <div class="chart-box"><canvas id="chartInterest"></canvas></div>
+            <div class="card" data-chart-id="chartInterest">
+                <h3>Bank of England Base Rate</h3>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartTaxRate">
                 <h3>National Tax Revenue (The "Big 4" Sources)</h3>
-                <div class="chart-box"><canvas id="chartTaxRate"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
-                <h3>UK Market Performance (2000=100)</h3>
-                <div class="chart-box"><canvas id="chartSectorCrash"></canvas></div>
+            <div class="card" data-chart-id="chartSectorCrash">
+                <h3>UK Stock Market growth relative to 1975</h3>
+                <div class="chart-thumbnail"></div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>2. The Individual & Family (Your Wallet)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartDebtCapita">
                 <h3>National Debt Per Person (Inflation adjusted)</h3>
-                <div class="chart-box"><canvas id="chartDebtCapita"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartGDPCapita">
                 <h3>GDP Growth Per Person (Living Standard)</h3>
-                <div class="chart-box"><canvas id="chartGDPCapita"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartRealWages">
                 <h3>Average Weekly Pay (Inflation Adjusted)</h3>
-                <div class="chart-box"><canvas id="chartRealWages"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartHousePrices">
                 <h3>Average House Price (Inflation Adjusted)</h3>
-                <div class="chart-box"><canvas id="chartHousePrices"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartHouseRatio">
                 <h3>Housing Affordability (Price vs Salary Ratio)</h3>
-                <div class="chart-box"><canvas id="chartHouseRatio"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartTaxCapita">
                 <h3>Tax Revenue Per Person (Inflation Adjusted)</h3>
-                <div class="chart-box"><canvas id="chartTaxCapita"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>3. Industry & Work (How We Earn)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartSectors">
                 <h3>Manufacturing vs Services (% GDP)</h3>
-                <div class="chart-box"><canvas id="chartSectors"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartWorkforce">
                 <h3>Workforce: Factory vs Office vs Public</h3>
-                <div class="chart-box"><canvas id="chartWorkforce"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartEnergy">
                 <h3>Energy: Coal vs Renewables</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>4. Population & Demographics (Who We Are)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartPopulation">
                 <h3>Total UK Population (Millions)</h3>
-                <div class="chart-box"><canvas id="chartPopulation"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartBirthRates">
                 <h3>Birth Rates (Boys vs Girls)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartLifeExpectancy">
                 <h3>Life Expectancy (1900 vs 2024)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartAgeingCrisis">
                 <h3>The Ageing Crisis (Dependency Ratio)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>5. Migration & Borders (Movement)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartMigrationNet">
                 <h3>Net Migration History</h3>
-                <div class="chart-box"><canvas id="chartMigrationNet"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartMigrationMirror">
                 <h3>The "Mirror": Arrivals vs Departures</h3>
-                <div class="chart-box"><canvas id="chartMigrationMirror"></canvas></div>
+                <div class="chart-thumbnail"></div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartAsylumNetMigration">
                 <h3>Asylum as % of Net Migration</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartAsylumDensity">
                 <h3>Asylum Density (Per 1,000 People)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartVisaTypes">
                 <h3>Visa Types: Work vs Study vs Family</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>6. Society & Institutions (The State of the Nation)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartNHSWaitingLists">
                 <h3>NHS Waiting Lists (The Long View)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartCrimeRates">
                 <h3>Crime Rates (Violent vs Theft)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartPrisonPopulation">
                 <h3>Prison Population (Men vs Women)</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartUniversityDegrees">
                 <h3>Education: University Degrees %</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
         </div>
     </details>
 
-    <details>
+    <details open>
         <summary>7. Global Context (The G7 Race)</summary>
         <div class="grid">
-            <div class="card">
+            <div class="card" data-chart-id="chartGDPG7">
                 <h3>GDP Growth: UK vs G7 Average</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartInflationG7">
                 <h3>Inflation Peaks: UK vs G7</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
-            <div class="card">
+            <div class="card" data-chart-id="chartDebtG7">
                 <h3>National Debt: UK vs G7</h3>
-                <div class="chart-box ghost">Coming Soon</div>
+                <div class="chart-thumbnail">Coming Soon</div>
             </div>
         </div>
     </details>
@@ -225,6 +191,30 @@
     <footer>Data Sourced from Bank of England "Millennium of Data" & ONS Historical Series.</footer>
 </div>
 
+<!-- Lightbox Modal Structure -->
+<div id="lightboxModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-controls">
+            <button id="backToGalleryBtn">Back to Gallery</button>
+            <div class="nav-buttons">
+                <button id="prevChartBtn">Previous</button>
+                <button id="nextChartBtn">Next</button>
+            </div>
+            <div class="toggle-buttons">
+                <button id="toggleHoverBtn">Toggle Hover (Off)</button>
+                <button id="toggleAnnotationsBtn">Toggle World Events (Off)</button>
+            </div>
+        </div>
+        <h2 id="lightboxChartTitle"></h2>
+        <div class="lightbox-chart-wrapper">
+            <canvas id="lightboxChartCanvas"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
 <script src="atlas.js"></script>
 
 </body>

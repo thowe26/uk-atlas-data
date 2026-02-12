@@ -1,14 +1,30 @@
+/* Global box-sizing for consistent layout */
+* {
+    box-sizing: border-box;
+}
+
 :root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
+
+/* Enforce no horizontal scroll and full width */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Physically prevent side-scrolling */
+}
 
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     background-color: var(--bg); 
     color: #333; 
-    margin: 0; 
-    padding: 10px; 
 }
 
-.container { max-width: 800px; margin: 0 auto; } 
+/* Main Container - Responsive width with auto margins for centering */
+.container { 
+    max-width: 1200px; /* Specific max-width as requested */
+    margin: 0 auto;    /* Center the container */
+    padding: 0 1rem;   /* Horizontal padding */
+} 
 
 /* HEADER */
 header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
@@ -32,41 +48,171 @@ summary {
     list-style: none;
     display: flex; justify-content: space-between; align-items: center;
     transition: background 0.2s;
+    grid-column: 1 / -1; /* Make summary span full width in grid */
 }
 
 summary:hover { background: #f8f9fa; }
 
-/* Custom Arrow */
-summary::after { content: '+'; font-size: 1.5rem; font-weight: bold; color: #bdc3c7; }
-details[open] summary::after { content: '-'; color: #3498db; }
+/* Custom Arrow removed as details are always open */
+summary::after { content: ''; } 
+
 
 /* GRID & CARDS */
-.grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; padding: 0 5px; }
+.grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
+    gap: 1rem; /* Strict 1rem gap */
+    width: 100%; /* Ensure grid takes full width available */
+    margin-top: 15px; 
+}
+
+/* Chapter titles within the grid should span all columns */
+.grid > summary {
+    grid-column: 1 / -1; /* Make summary span full width in grid */
+}
 
 .card { 
     background: var(--card-bg); 
-    padding: 12px; 
-    border-radius: 12px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    padding: 8px; /* Reduced padding for compactness */
+    border-radius: 8px; /* Slightly smaller border-radius */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Lighter shadow */
+    cursor: pointer; /* Make cards clickable */
+    position: relative; /* For absolute positioning of title overlay */
+    overflow: hidden; /* Hide anything outside the card */
+    min-height: 200px; /* Reduced min-height for compactness */
+    display: flex;
+    flex-direction: column;
 }
 
-h3 { 
-    margin-top: 0; color: #34495e; font-size: 1rem; 
-    display: flex; justify-content: space-between; align-items: center; 
-    margin-bottom: 10px;
+/* No hover effect for static thumbnails */
+.card:hover canvas { 
+    opacity: 1.0; 
 }
 
-.placeholder-text { text-align: center; padding: 20px; color: #95a5a6; font-style: italic; }
+.chart-thumbnail {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.41 / 1; /* A4 Landscape aspect ratio */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Styling for "Coming Soon" placeholder */
+    color: #bdc3c7;
+    font-weight: bold;
+    font-style: italic;
+    border: 2px dashed #bdc3c7;
+    background: #fafafa;
+    border-radius: 8px;
+    height: auto; /* Let aspect-ratio handle height */
+}
 
-/* MOBILE OPTIMIZATION */
-.chart-box { position: relative; height: 200px; width: 100%; }
+.chart-thumbnail canvas {
+    opacity: 1.0; /* Fully visible, no fade effect */
+}
+
+.chart-title-overlay { /* New class for title overlay */
+    position: absolute;
+    top: 10px; /* Adjusted position */
+    left: 10px;
+    right: 10px; /* Ensure it stays within bounds */
+    z-index: 10;
+    font-size: 0.9rem; /* Adjusted font size */
+    font-weight: bold;
+    color: #444;
+    background: rgba(255,255,255,0.9); /* Adjusted background opacity */
+    padding: 4px 8px; /* Adjusted padding */
+    border-radius: 4px; /* Adjusted border-radius */
+    pointer-events: none; /* Allows clicks to pass through to the card */
+    /* Removed text-align: center; as left/right positioning defines width */
+}
+
+h3 { /* Original h3 now hidden as title is an overlay */
+    display: none; 
+}
+
+/* Lightbox chart container - separate from thumbnail */
+.chart-container { /* This is for lightbox */
+    position: relative; 
+    width: 95%; 
+    margin: auto; 
+    min-height: 300px; 
+} 
 
 footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75rem; }
 
+/* Lightbox Modal */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    inset: 0; /* Shorthand for top, right, bottom, left: 0 */
+    z-index: 1000; /* Sit on top */
+    background-color: white; /* Changed as per user request */
+    overflow: auto; /* Enable scroll if needed */
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%; /* Could be more or less, depending on screen size */
+    max-width: 1000px; /* Max width for content */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative; /* Needed for absolute positioning of elements inside */
+}
+
+#lightboxChartTitle {
+    text-align: center;
+    color: var(--primary);
+    margin-top: 10px;
+    font-size: 1.5rem;
+}
+
+.modal-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    gap: 10px; /* Space between buttons */
+}
+
+.modal-controls button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.modal-controls button:hover {
+    background-color: #2980b9;
+}
+
+.lightbox-chart-wrapper {
+    position: relative;
+    height: 60vh; /* 60% of viewport height */
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Responsive adjustments */
 @media (min-width: 600px) {
     body { padding: 30px; }
     h1 { font-size: 2.5rem; }
     .card { padding: 25px; }
-    .chart-box { height: 350px; }
     h3 { font-size: 1.1rem; margin-bottom: 15px; }
+    /* Grid is now handled by auto-fit, minmax */
 }
+
+@media (min-width: 768px) { /* Added for better tablet responsiveness */
+    .modal-content {
+        margin: 5% auto; /* Keep it more central on larger screens */
+        width: 80%; /* Slightly smaller on tablets */
+    }
+}
+
+/* Removed explicit desktop grid media query as auto-fit handles it */
