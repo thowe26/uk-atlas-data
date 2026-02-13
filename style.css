@@ -3,7 +3,7 @@
     box-sizing: border-box;
 }
 
-:root { --primary: #2c3e50; --bg: #f4f7f6; --card-bg: #ffffff; }
+:root { --primary: #2c3e50; --bg: #e0e0e0; --card-bg: #ffffff; }
 
 /* Enforce no horizontal scroll and full width */
 html, body {
@@ -13,18 +13,18 @@ html, body {
     overflow-x: hidden; /* Physically prevent side-scrolling */
 }
 
-body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background-color: var(--bg); 
-    color: #333; 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg); /* Concrete Grey */
+    color: #333;
 }
 
 /* Main Container - Responsive width with auto margins for centering */
-.container { 
+.container {
     max-width: 1200px; /* Specific max-width as requested */
     margin: 0 auto;    /* Center the container */
     padding: 0 1rem;   /* Horizontal padding */
-} 
+}
 
 /* HEADER */
 header { text-align: center; margin-bottom: 30px; padding: 20px 0; border-bottom: 2px solid #dfe6e9; }
@@ -32,38 +32,47 @@ h1 { margin: 0; font-size: 1.8rem; color: var(--primary); letter-spacing: -1px; 
 .subtitle { color: #7f8c8d; margin-top: 5px; font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
 /* CHAPTERS */
-details { margin-bottom: 15px; }
+.chapter-section { /* New wrapper for each chapter */
+    background-color: #ffffff; /* White Card */
+    padding: 10px 20px 5px 20px; /* Reduced vertical padding */
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+details { margin-bottom: 0; } /* Removed margin to tighten layout */
 
 summary {
     cursor: pointer;
-    font-size: 1.2rem; 
+    font-size: 1.2rem;
     font-weight: 600;
-    color: var(--primary); 
+    color: var(--primary);
     margin: 0;
-    padding: 15px;
-    border-left: 5px solid #3498db; 
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    padding: 15px 15px 5px 15px; /* Reduced bottom padding */
+    border-left: 5px solid #3498db;
+    background: #ffffff; /* This will be overridden by .chapter-section if used as a direct child */
+    border-radius: 8px; /* This will be overridden by .chapter-section if used as a direct child */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* This will be overridden by .chapter-section if used as a direct child */
     list-style: none;
     display: flex; justify-content: space-between; align-items: center;
     transition: background 0.2s;
-    grid-column: 1 / -1; /* Make summary span full width in grid */
+    /* grid-column: 1 / -1; This should be handled by .chapter-section or its parent */
 }
 
 summary:hover { background: #f8f9fa; }
 
 /* Custom Arrow removed as details are always open */
-summary::after { content: ''; } 
+summary::after { content: ''; }
 
 
 /* GRID & CARDS */
-.grid { 
-    display: grid; 
+.grid {
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive columns */
-    gap: 1rem; /* Strict 1rem gap */
+    gap: 0.5rem; /* Reduced gap to 8px */
+    row-gap: 0.5rem; /* Explicit row gap */
     width: 100%; /* Ensure grid takes full width available */
-    margin-top: 15px; 
+    margin-top: 15px;
 }
 
 /* Chapter titles within the grid should span all columns */
@@ -71,22 +80,21 @@ summary::after { content: ''; }
     grid-column: 1 / -1; /* Make summary span full width in grid */
 }
 
-.card { 
-    background: var(--card-bg); 
-    padding: 8px; /* Reduced padding for compactness */
-    border-radius: 8px; /* Slightly smaller border-radius */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Lighter shadow */
-    cursor: pointer; /* Make cards clickable */
-    position: relative; /* For absolute positioning of title overlay */
-    overflow: hidden; /* Hide anything outside the card */
-    min-height: 200px; /* Reduced min-height for compactness */
+.card {
+    background: var(--card-bg);
+    padding: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    transition: box-shadow 0.3s ease;
 }
 
-/* No hover effect for static thumbnails */
-.card:hover canvas { 
-    opacity: 1.0; 
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
 .chart-thumbnail {
@@ -100,110 +108,214 @@ summary::after { content: ''; }
     color: #bdc3c7;
     font-weight: bold;
     font-style: italic;
-    border: 2px dashed #bdc3c7;
+    border: 2px solid #888; /* Darker, thicker grey border */
     background: #fafafa;
     border-radius: 8px;
     height: auto; /* Let aspect-ratio handle height */
 }
 
 .chart-thumbnail canvas {
-    opacity: 1.0; /* Fully visible, no fade effect */
+    opacity: 0.6; /* Washed-out effect */
 }
 
-.chart-title-overlay { /* New class for title overlay */
+.chart-title { /* Renamed from .chart-title-overlay and updated styles */
     position: absolute;
-    top: 10px; /* Adjusted position */
-    left: 10px;
-    right: 10px; /* Ensure it stays within bounds */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 10;
-    font-size: 0.9rem; /* Adjusted font size */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1rem;
     font-weight: bold;
-    color: #444;
-    background: rgba(255,255,255,0.9); /* Adjusted background opacity */
-    padding: 4px 8px; /* Adjusted padding */
-    border-radius: 4px; /* Adjusted border-radius */
-    pointer-events: none; /* Allows clicks to pass through to the card */
-    /* Removed text-align: center; as left/right positioning defines width */
+    color: #222; /* Sharper charcoal color for pop */
+    background: transparent; /* Removed opaque background */
+    text-shadow: 0 0 5px white, 0 0 10px white; /* Text shadow for readability */
+    pointer-events: none; /* Allows clicks to pass through */
 }
 
 h3 { /* Original h3 now hidden as title is an overlay */
-    display: none; 
+    display: none;
 }
 
 /* Lightbox chart container - separate from thumbnail */
 .chart-container { /* This is for lightbox */
-    position: relative; 
-    width: 95%; 
-    margin: auto; 
-    min-height: 300px; 
-} 
+    position: relative;
+    width: 95%;
+    margin: auto;
+    min-height: 300px;
+}
 
 footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75rem; }
 
 /* Lightbox Modal */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    inset: 0; /* Shorthand for top, right, bottom, left: 0 */
-    z-index: 1000; /* Sit on top */
-    background-color: white; /* Changed as per user request */
-    overflow: auto; /* Enable scroll if needed */
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: white;
+    overflow: auto;
 }
 
 .modal-content {
     background-color: var(--card-bg);
-    margin: 5% auto; /* 5% from the top and centered */
-    padding: 20px;
+    margin: 3% auto;
+    padding: 0; /* Remove padding to allow header to span full width */
     border-radius: 12px;
-    width: 90%; /* Could be more or less, depending on screen size */
-    max-width: 1000px; /* Max width for content */
+    width: 90%;
+    max-width: 1100px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative; /* Needed for absolute positioning of elements inside */
+    position: relative;
 }
 
-#lightboxChartTitle {
-    text-align: center;
-    color: var(--primary);
-    margin-top: 10px;
-    font-size: 1.5rem;
-}
-
-.modal-controls {
+/* Two-Tier Header */
+.modal-nav-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
-    gap: 10px; /* Space between buttons */
+    padding: 10px 40px; /* Add horizontal padding */
 }
 
-.modal-controls button {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3498db;
-    color: white;
+.nav-bar-left, .nav-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.modal-title-bar {
+    text-align: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee; /* Subtle divider */
+    margin: 0 40px 20px 40px; /* Margin to align with padding */
+}
+
+#lightboxChartTitle {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+/* Toggles & Icons */
+.home-icon {
+    font-size: 1.5rem;
+    color: #888;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
 }
 
-.modal-controls button:hover {
-    background-color: #2980b9;
+.modal-toggle {
+    cursor: pointer;
+    color: #aaa; /* Default OFF state */
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s, font-weight 0.2s;
 }
+
+.modal-toggle.toggled-on {
+    color: #000;
+    font-weight: 700;
+}
+
+/* Navigation & Share */
+#prevChartBtn, #nextChartBtn {
+    background: transparent;
+    border: none;
+    font-size: 2.5rem;
+    padding: 0;
+    cursor: pointer;
+    color: #aaa; /* Match toggle text color */
+    font-weight: 600; /* Match toggle text weight */
+    transition: color 0.2s;
+}
+#prevChartBtn:hover, #nextChartBtn:hover {
+    color: #000;
+}
+
+.nav-bar-left {
+    position: relative; /* For feedback positioning */
+}
+
+#shareFeedback {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 10px;
+    background: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+
+
+/* About Panel */
+#aboutPanel {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 100px;
+    transform: translateY(-50%);
+    width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 2500;
+    padding: 25px;
+}
+#aboutPanel.active {
+    display: block;
+}
+#aboutPanel p {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+}
+.references {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    font-size: 0.8rem;
+    color: #666;
+}
+.references h4 {
+    margin: 0 0 5px 0;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif; /* Match UI font */
+}
+.references p {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif; /* Match UI font */
+}
+
 
 .lightbox-chart-wrapper {
     position: relative;
-    height: 60vh; /* 60% of viewport height */
+    height: 65vh;
     width: 100%;
-    margin-top: 20px;
+    padding: 0 20px 20px 20px; /* Padding for the chart itself */
 }
 
 /* Responsive adjustments */
 @media (min-width: 600px) {
     body { padding: 30px; }
     h1 { font-size: 2.5rem; }
-    .card { padding: 25px; }
+    .card { padding: 4px; } /* Ensure padding is consistent */
     h3 { font-size: 1.1rem; margin-bottom: 15px; }
     /* Grid is now handled by auto-fit, minmax */
 }
