@@ -161,15 +161,11 @@ footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75re
     overflow: auto;
 }
 
+/* 1. Ensure the parent container doesn't have a solid white background */
 .modal-content {
-    background-color: var(--card-bg);
-    margin: 3% auto;
-    padding: 0; /* Remove padding to allow header to span full width */
-    border-radius: 12px;
-    width: 90%;
-    max-width: 1100px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
+    background-color: transparent !important; /* Change from var(--card-bg) */
+    box-shadow: none !important; /* Remove the outer shadow to let the panel shadow work */
+    border: none !important;
 }
 
 /* Two-Tier Header */
@@ -202,11 +198,18 @@ footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75re
     text-transform: uppercase;
 }
 
-/* Toggles & Icons */
+/* 1. Scaling up the Home Icon */
 .home-icon {
-    font-size: 1.5rem;
-    color: #888;
+    font-size: 1.8rem !important; /* Increased from 1.5rem */
+    color: #666;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.home-icon:hover {
+    color: #000;
 }
 
 .modal-toggle {
@@ -224,17 +227,19 @@ footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75re
     font-weight: 700;
 }
 
-/* Navigation & Share */
+/* 2. Reducing the size of Next/Prev Arrows */
 #prevChartBtn, #nextChartBtn {
     background: transparent;
     border: none;
-    font-size: 2.5rem;
-    padding: 0;
+    font-size: 1.8rem !important; /* Reduced from 2.5rem to match home icon */
+    padding: 0 10px;
     cursor: pointer;
-    color: #aaa; /* Match toggle text color */
-    font-weight: 600; /* Match toggle text weight */
+    color: #aaa;
+    font-weight: 400; /* Lighter weight for a cleaner look */
     transition: color 0.2s;
+    line-height: 1;
 }
+
 #prevChartBtn:hover, #nextChartBtn:hover {
     color: #000;
 }
@@ -260,31 +265,39 @@ footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75re
 }
 
 
-/* About Panel */
+/* 2. Standardize the About Panel with a more visible transparency */
 #aboutPanel {
     display: none;
-    position: absolute;
-    top: 50%;
-    left: 100px;
-    transform: translateY(-50%);
-    width: 350px;
-    max-height: 400px;
-    overflow-y: auto;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-    z-index: 2500;
-    padding: 25px;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 620px !important;
+    max-height: 85% !important;
+    padding: 40px !important;
+    background: rgba(255, 255, 255, 0.5) !important;
+    backdrop-filter: blur(1px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(1px) saturate(180%) !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+    z-index: 9999 !important;
+    overflow-y: auto !important;
 }
+
+
 #aboutPanel.active {
-    display: block;
+    display: block !important;
 }
 #aboutPanel p {
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 1rem;
-    line-height: 1.6;
+   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;font-size: 0.9rem; /* Changed from 0.85rem */
+    line-height: 1.6; /* Changed from 1.6 */
     color: #333;
-    margin: 0;
+    margin-bottom: 1.2rem;
+    text-align: left !important;
+}
+#commentaryText p { /* Added new rule */
+    margin-bottom: 15px;
 }
 .references {
     margin-top: 20px;
@@ -328,3 +341,5 @@ footer { text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.75re
 }
 
 /* Removed explicit desktop grid media query as auto-fit handles it */
+
+#commentaryText p, #sourcesText p { margin-bottom: 1.5rem; line-height: 1.6; }
