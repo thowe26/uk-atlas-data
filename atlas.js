@@ -74,7 +74,7 @@ function renderChartInstance(config, allData, isThumbnail, showTooltips = true, 
 
     if (Chart.getChart(canvas)) { Chart.getChart(canvas).destroy(); }
 
-    const isPercentageChart = config.id.includes('Inflation') || config.id.includes('Debt') || config.id.includes('GDP') || config.id.includes('Unemployment') || config.id.includes('Rate') || config.id.includes('Ratio');
+    const isPercentageChart = config.id.includes('Inflation') || config.id.includes('Debt') || config.id.includes('GDP') || config.id.includes('Unemployment') || config.id.includes('Rate') || config.id.includes('Interest') || config.id.includes('Ratio');
     const isCurrencyChart = config.id === 'chartDebtCapita' || config.id === 'chartRealWages' || config.id === 'chartHousePrices';
 
     let chartOptions = {
