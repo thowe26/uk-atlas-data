@@ -112,16 +112,28 @@ function renderChartInstance(config, allData, isThumbnail, showTooltips = true, 
                     callback: v => String(v).replace(/,/g, '') 
                 }
             },
-            y: {
-                display: !isThumbnail,
-                ticks: {
-                    callback: function(value) {
-                        if (isCurrencyChart) return '£' + (value / 1000) + 'k';
-                        if (isPercentageChart) return value + '%';
-                        return value;
-                    }
+     y: {
+    display: !isThumbnail,
+    ticks: {
+        callback: function(value) {
+            if (isThumbnail) return '';
+
+            if (isCurrencyChart) {
+                // If the value is 1000 or more, show as 'k'
+                // If the engine has already scaled it down (value < 1000), 
+                // we just add the 'k' without dividing again.
+                if (value >= 1000) {
+                    return '£' + (value / 1000) + 'k';
                 }
+                return '£' + value + 'k';
             }
+            
+            if (isPercentageChart) return value + '%';
+            
+            return value;
+        }
+    }
+}
         }
     };
     if (isThumbnail) { chartOptions.events = []; }
